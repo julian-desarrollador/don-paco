@@ -39,6 +39,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# visibilidad local si Prisma aún no regeneró el cliente
+/data/product-hidden.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

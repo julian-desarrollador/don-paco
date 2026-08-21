@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { GroupSelectOption } from "@/lib/admin/product-form-values";
 import type { ProductFormValues } from "@/lib/admin/product-form-values";
-import { categoryBadgeLabel, isCategoryId, type CategoryId } from "@/lib/category-tree";
+import { categoryBadgeLabel, isCategoryId } from "@/lib/category-tree";
 import { formatArs } from "@/lib/product-format";
 import { listaDesdePrecioTarjeta, precioEfectivoTransfer, precioTarjetaDesdeLista } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,8 @@ type Props = {
   mode?: "create" | "edit";
   form: UseFormReturn<ProductFormValues>;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
-  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void | Promise<void>;
+  onDelete?: () => void;
   groupSelectOptions: GroupSelectOption[];
 };
 
@@ -35,6 +36,7 @@ export function ProductFormStorefront({
   form,
   onSubmit,
   onUpload,
+  onDelete,
   groupSelectOptions,
 }: Props) {
   const router = useRouter();
@@ -43,7 +45,6 @@ export function ProductFormStorefront({
   const v = watch();
   const images = v.images ?? [];
   const gallery = useMemo(() => normalizeGalleryImages(images), [images]);
-  /** URL mostrada arriba; al tocar una miniatura se fuerza; si deja de existir en la galería se corrige en el effect. */
   const [heroUrl, setHeroUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -72,22 +73,17 @@ export function ProductFormStorefront({
   const catId = v.categoryId;
   const catLabel = isCategoryId(catId) ? categoryBadgeLabel(catId) : "Sin categoría";
   const slugWatch = (v.slug || "").trim();
-  const shortLine = `${formatArs(price)} con tarjeta · ${v.marca || "—"}`.trim();
+
   return (
     <form onSubmit={onSubmit} className="pb-28 md:pb-0">
       <section className="mx-auto w-full max-w-7xl">
         {isCreate ? (
-          <div className="mb-4 rounded-xl border border-[#e4e4e7] bg-white px-4 py-3 shadow-sm">
-            <h1 className="text-xl font-black tracking-tight text-[#18181b] md:text-2xl">Nuevo producto</h1>
-            <p className="mt-1 text-sm text-[#71717a]">
-              Misma vista que al editar: completá la ficha, definí el slug y subí al menos una imagen.
-            </p>
-          </div>
+          <h1 className="mb-4 text-xl font-black tracking-tight text-[#18181b] md:text-2xl">Nuevo producto</h1>
         ) : null}
 
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-2">
-            {!isCreate && slugWatch ? (
+            {!isCreate && slugWatch && v.activo !== false ? (
               <Button type="button" variant="outline" size="sm" className="rounded-xl" asChild>
                 <Link href={`/productos/${encodeURIComponent(slugWatch)}`} target="_blank" rel="noopener noreferrer">
                   Ver en tienda ↗
@@ -106,12 +102,8 @@ export function ProductFormStorefront({
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          {/* Columna imagen — misma jerarquía que la tienda */}
           <div>
             <div className="mb-4 rounded-2xl border border-[#e6e6e6] bg-gradient-to-br from-[#f6f6f6] to-[#ececec] p-4 sm:p-6">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-[#a1a1aa]">
-                Vista principal{gallery.length > 1 ? " — tocá una miniatura abajo para elegir" : ""}
-              </p>
               <div className="relative flex h-56 items-center justify-center rounded-xl bg-white/80 sm:h-72 md:h-[320px]">
                 {mainImg ? (
                   <Image
@@ -131,35 +123,14 @@ export function ProductFormStorefront({
             </div>
 
             <div className="space-y-3">
+              <Label className="text-sm font-semibold text-[#52525b]">Fotos</Label>
               <div>
-                <Label className="text-xs font-semibold uppercase tracking-wide text-[#71717a]">Galería del producto</Label>
-                <p className="mt-1 text-xs leading-snug text-[#a1a1aa]">
-                  Imágenes de esta variante en la ficha. La imagen común del grupo (card con varios formatos) se edita en
-                  Productos → grupo, no en esta pantalla.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" size="sm" className="rounded-xl" asChild>
                   <label className="cursor-pointer">
                     Subir imagen
                     <input type="file" accept="image/*" className="hidden" onChange={onUpload} />
                   </label>
                 </Button>
-                <Input
-                  placeholder="Pegá URL y Enter"
-                  className="max-w-xs rounded-xl"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      const el = e.target as HTMLInputElement;
-                      const url = el.value.trim();
-                      if (!url) return;
-                      const imgs = images;
-                      setValue("images", [...imgs, url], { shouldValidate: true });
-                      el.value = "";
-                    }
-                  }}
-                />
               </div>
               <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {images.map((url, i) => {
@@ -209,7 +180,6 @@ export function ProductFormStorefront({
             </div>
           </div>
 
-          {/* Columna ficha — precios y título editables */}
           <div className="rounded-2xl border border-[#e6e6e6] bg-white p-5 shadow-sm sm:p-6">
             <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase">
               <span className="rounded-full bg-[#029f9c]/15 px-2.5 py-1 text-[#029f9c]">{catLabel}</span>
@@ -223,16 +193,14 @@ export function ProductFormStorefront({
               </span>
             </div>
 
-            <div className="mb-2 space-y-2">
-              <Label htmlFor="storefront-name" className="sr-only">
-                Nombre en tienda
-              </Label>
+            <div className="mb-4 space-y-2">
+              <Label htmlFor="storefront-name">Nombre</Label>
               <textarea
                 id="storefront-name"
                 rows={2}
                 {...register("name")}
                 className={cn(
-                  "w-full resize-none border-0 border-b-2 border-transparent bg-transparent text-xl font-black uppercase leading-tight text-[#555] placeholder:text-[#b4b4b4] focus:border-[#029f9c]/40 focus:outline-none md:text-2xl",
+                  "w-full resize-none rounded-lg border border-[#e4e4e4] bg-white px-3 py-2 text-xl font-black uppercase leading-tight text-[#555] placeholder:text-[#b4b4b4] focus:border-[#029f9c]/40 focus:outline-none md:text-2xl",
                 )}
                 placeholder="Nombre del producto"
               />
@@ -241,23 +209,12 @@ export function ProductFormStorefront({
               )}
             </div>
 
-            <p className="mb-5 text-[15px] leading-7 text-[#707070]">{shortLine}</p>
-
             <div className="mb-6 rounded-xl bg-[#f7f7f7] p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#8a8a8a]">Vista previa (como en la tienda)</p>
-              <p className="mt-1 text-3xl font-black text-[#029f9c]">{formatArs(price)}</p>
+              <p className="text-3xl font-black text-[#18181b]">{formatArs(price)}</p>
               <p className="mt-1 text-sm text-[#7a7a7a]">{formatArs(cashPrice)} efectivo o transferencia</p>
-              <p className="mt-2 text-xs leading-snug text-[#9ca3af]">
-                Precio común de referencia (sin recargo tarjeta): <strong className="font-semibold text-[#6b7280]">{formatArs(lista)}</strong>
-              </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <Label htmlFor="storefront-precio-tarjeta" className="text-xs font-semibold text-[#52525b]">
-                    Precio con tarjeta (ARS)
-                  </Label>
-                  <p className="text-[11px] leading-snug text-[#a1a1aa]">
-                    Es el monto grande que ve el comprador en la ficha; coincide con la vista previa de arriba.
-                  </p>
+                  <Label htmlFor="storefront-precio-tarjeta">Precio con tarjeta</Label>
                   <Controller
                     name="lista"
                     control={control}
@@ -293,42 +250,15 @@ export function ProductFormStorefront({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="storefront-cash" className="text-xs font-semibold text-[#52525b]">
-                    Efectivo / transferencia (opcional)
-                  </Label>
-                  <p className="text-[11px] leading-snug text-[#a1a1aa]">
-                    Si lo dejás vacío, en la tienda se usa el precio común ({formatArs(lista)}).
-                  </p>
+                  <Label htmlFor="storefront-cash">Efectivo (opcional)</Label>
                   <Input
                     id="storefront-cash"
                     type="number"
                     step="1"
-                    placeholder={lista > 0 ? `Vacío = ${formatArs(lista)}` : "Vacío = precio común"}
                     className="rounded-lg border-[#e4e4e4] bg-white"
                     {...register("cash")}
                   />
                 </div>
-              </div>
-              <p className="mt-3 text-xs leading-relaxed text-[#6b7280]">
-                <strong className="text-[#52525b]">Lo que ingresás en precio con tarjeta</strong> es el monto final que
-                ve el comprador (el 10% ya queda incorporado en ese valor). El precio común es referencia (ese monto ÷
-                1,10). El efectivo puede ser otro si lo completás.
-              </p>
-            </div>
-
-            <p className="mb-4 rounded-lg border border-dashed border-[#e4e4e4] bg-[#fafafa] px-3 py-2 text-xs text-[#8a8a8a]">
-              En la tienda el cliente ve <strong className="text-[#555]">Agregar al carrito</strong> acá. Desde el admin
-              solo editás datos.
-            </p>
-
-            <div className="grid gap-3 text-sm text-[#666] sm:grid-cols-2">
-              <div className="rounded-lg border border-[#e4e4e4] bg-[#fafafa] p-3">
-                <p className="font-semibold text-[#555]">Envíos a todo el país</p>
-                <p className="mt-1 text-xs text-[#7d7d7d]">Texto fijo de la tienda.</p>
-              </div>
-              <div className="rounded-lg border border-[#e4e4e4] bg-[#fafafa] p-3">
-                <p className="font-semibold text-[#555]">Cambios garantizados</p>
-                <p className="mt-1 text-xs text-[#7d7d7d]">Texto fijo de la tienda.</p>
               </div>
             </div>
           </div>
@@ -336,12 +266,7 @@ export function ProductFormStorefront({
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_330px]">
           <section className="rounded-2xl border border-[#e6e6e6] bg-white p-5 sm:p-6">
-            <h2 className="mb-3 text-lg font-extrabold uppercase tracking-wide text-[#029f9c]">
-              Descripción del producto
-            </h2>
-            <Label htmlFor="storefront-description" className="sr-only">
-              Descripción
-            </Label>
+            <h2 className="mb-3 text-base font-bold text-[#18181b]">Descripción</h2>
             <textarea
               id="storefront-description"
               rows={8}
@@ -351,88 +276,88 @@ export function ProductFormStorefront({
             />
           </section>
 
-          <aside className="rounded-2xl border border-[#e6e6e6] bg-[#f9f9f9] p-5 sm:p-6">
-            <h3 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-[#029f9c]">Datos y URL</h3>
-            <dl className="space-y-4 text-sm">
-              <div className="space-y-1 border-b border-[#e5e5e5] pb-3">
-                <dt className="text-[#8a8a8a]">Categoría</dt>
-                <dd className="pt-1">
-                  <CategoryFilterPicker
-                    variant="required"
-                    hideLabel
-                    value={v.categoryId}
-                    onChange={(id) => {
-                      if (!id || !isCategoryId(id)) return;
-                      setValue("categoryId", id, { shouldValidate: true });
-                    }}
-                  />
-                </dd>
+          <aside className="rounded-2xl border border-[#e6e6e6] bg-white p-5 sm:p-6">
+            <div className="space-y-4 text-sm">
+              <div className="space-y-1">
+                <Label>Categoría</Label>
+                <CategoryFilterPicker
+                  variant="required"
+                  hideLabel
+                  value={v.categoryId}
+                  onChange={(id) => {
+                    if (!id || !isCategoryId(id)) return;
+                    setValue("categoryId", id, { shouldValidate: true });
+                  }}
+                />
               </div>
-              <div className="space-y-1 border-b border-[#e5e5e5] pb-3">
-                <dt className="text-[#8a8a8a]">Grupo (opcional)</dt>
-                <dd>
-                  <select
-                    className="mt-1 flex h-10 w-full rounded-lg border border-[#e4e4e4] bg-white px-3 text-sm"
-                    {...register("groupSlug")}
-                  >
-                    <option value="">— Sin grupo —</option>
-                    {groupSelectOptions.map((g) => (
-                      <option key={g.value} value={g.value}>
-                        {g.label}
-                      </option>
-                    ))}
-                  </select>
-                  {formState.errors.groupSlug && (
-                    <p className="mt-1 text-xs text-red-600">{formState.errors.groupSlug.message}</p>
+              <div className="space-y-1">
+                <Label htmlFor="storefront-group">Grupo (opcional)</Label>
+                <select
+                  id="storefront-group"
+                  className="mt-1 flex h-10 w-full rounded-lg border border-[#e4e4e4] bg-white px-3 text-sm"
+                  {...register("groupSlug")}
+                >
+                  <option value="">— Sin grupo —</option>
+                  {groupSelectOptions.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+                {formState.errors.groupSlug && (
+                  <p className="mt-1 text-xs text-red-600">{formState.errors.groupSlug.message}</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label>En la tienda</Label>
+                <button
+                  type="button"
+                  onClick={() => setValue("activo", v.activo === false, { shouldDirty: true })}
+                  className={cn(
+                    "mt-1 flex h-11 w-full items-center justify-between rounded-xl border px-3.5 text-sm font-semibold",
+                    v.activo === false
+                      ? "border-[#e8d9b8] bg-[#faf6ee] text-[#7c5c1e]"
+                      : "border-[#b7e0de] bg-[#f0faf9] text-[#027a78]",
                   )}
-                  <p className="mt-1 text-xs text-[#8a8a8a]">
-                    Misma card en el listado que otras presentaciones (ej. distintos talles).
-                  </p>
-                </dd>
-              </div>
-              <div className="space-y-1 border-b border-[#e5e5e5] pb-3">
-                <dt className="text-[#8a8a8a]">Slug (URL)</dt>
-                <dd>
-                  <Input
-                    readOnly={!isCreate}
-                    placeholder={isCreate ? "ej. collar-rojo-mediano" : undefined}
+                >
+                  {v.activo === false ? "Oculto en la página" : "Se muestra en la página"}
+                  <span
                     className={cn(
-                      "mt-1 rounded-lg font-mono text-xs",
-                      !isCreate && "cursor-not-allowed bg-[#fafafa]",
+                      "relative h-6 w-11 rounded-full",
+                      v.activo === false ? "bg-[#c4b89a]" : "bg-[#029f9c]",
                     )}
-                    {...register("slug")}
-                  />
-                  <p className="mt-1 text-xs text-[#8a8a8a]">
-                    {isCreate
-                      ? "Solo minúsculas, números y guiones. Será la dirección pública del producto."
-                      : "La URL es fija tras crear el producto; cambios coordinados con desarrollo."}
-                  </p>
-                  {formState.errors.slug && (
-                    <p className="mt-1 text-xs text-red-600">{formState.errors.slug.message}</p>
-                  )}
-                </dd>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <dt className="text-[#8a8a8a]">Marca</dt>
-                  <dd>
-                    <Input className="mt-1 rounded-lg" {...register("marca")} />
-                  </dd>
-                </div>
-                <div className="space-y-1">
-                  <dt className="text-[#8a8a8a]">Presentación</dt>
-                  <dd>
-                    <Input className="mt-1 rounded-lg" {...register("nombre")} />
-                  </dd>
-                </div>
+                  >
+                    <span
+                      className={cn(
+                        "absolute top-1 h-4 w-4 rounded-full bg-white transition-all",
+                        v.activo === false ? "left-1" : "left-6",
+                      )}
+                    />
+                  </span>
+                </button>
               </div>
               <div className="flex items-center gap-2 pt-1">
-                <input id="storefront-destacado" type="checkbox" className="h-4 w-4 accent-[#029f9c]" {...register("destacado")} />
+                <input
+                  id="storefront-destacado"
+                  type="checkbox"
+                  className="h-4 w-4 accent-[#029f9c]"
+                  {...register("destacado")}
+                />
                 <Label htmlFor="storefront-destacado" className="font-medium text-[#555]">
-                  Destacado en catálogo
+                  Destacado
                 </Label>
               </div>
-            </dl>
+              {!isCreate && onDelete ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4 w-full rounded-xl border-red-200 text-red-600 hover:bg-red-50"
+                  onClick={onDelete}
+                >
+                  Eliminar producto
+                </Button>
+              ) : null}
+            </div>
           </aside>
         </div>
       </section>

@@ -9,14 +9,10 @@ const imageRef = z.string().refine(
 );
 
 export const productPayloadSchema = z.object({
-  slug: z
-    .string()
-    .min(1)
-    .max(160)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug: solo minúsculas, números y guiones"),
+  slug: z.string().max(160).optional().default(""),
   name: z.string().min(1).max(400),
-  marca: z.string().min(1).max(160),
-  nombre: z.string().min(1).max(200),
+  marca: z.string().max(160).optional().default(""),
+  nombre: z.string().max(200).optional().default(""),
   description: z.string().max(8000).optional(),
   lista: z.coerce.number().min(0),
   cash: z
@@ -34,6 +30,7 @@ export const productPayloadSchema = z.object({
   stock: z.coerce.number().int().min(0).max(999_999).default(5),
   images: z.array(imageRef).default([]),
   destacado: z.boolean().default(false),
+  activo: z.boolean().default(true),
   groupSlug: z
     .union([z.string(), z.null(), z.undefined()])
     .optional()
@@ -42,17 +39,20 @@ export const productPayloadSchema = z.object({
       const s = String(v).trim();
       return s === "" ? null : s;
     })
-    .refine((v) => {
-      if (v === null) return true;
-      if (listGroupSlugs().includes(v)) return true;
-      return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v) && v.length <= 200;
-    }, {
-      message: "Grupo inválido (solo catálogo base o slug kebab) o dejalo vacío",
-    }),
+    .refine(
+      (v) => {
+        if (v === null) return true;
+        if (listGroupSlugs().includes(v)) return true;
+        return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v) && v.length <= 200;
+      },
+      {
+        message: "Grupo inválido",
+      },
+    ),
 });
 
 export type ProductPayload = z.infer<typeof productPayloadSchema>;
 
 export const productCreateSchema = productPayloadSchema.extend({
-  images: z.array(imageRef).min(1, "Agregá al menos una imagen (URL o subida)"),
+  images: z.array(imageRef).min(1, "Agregá al menos una imagen"),
 });

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ProductForm from "@/components/admin/product-form";
 import { listGroupSelectOptions } from "@/lib/admin-group-select-options";
 import { productToFormValues } from "@/lib/admin/product-form-values";
+import { attachProductActivo } from "@/lib/product-activo";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,8 @@ export default async function EditProductPage({ params }: Props) {
   let product = null;
   try {
     if (process.env.DATABASE_URL?.trim()) {
-      product = await prisma.product.findUnique({ where: { id } });
+      const found = await prisma.product.findUnique({ where: { id } });
+      product = found ? (await attachProductActivo([found]))[0]! : null;
     }
   } catch {
     product = null;

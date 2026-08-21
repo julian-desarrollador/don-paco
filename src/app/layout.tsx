@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import CartProvider from "@/components/cart-provider";
+import { CartToast } from "@/components/cart-toast";
 import AppProviders from "@/components/providers/app-providers";
 import "./globals.css";
 
@@ -31,7 +32,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AppProviders>
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>
+            {children}
+            <CartToast />
+          </CartProvider>
         </AppProviders>
       </body>
     </html>

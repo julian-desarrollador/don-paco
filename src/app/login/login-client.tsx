@@ -15,7 +15,6 @@ import { safeAdminRedirectAfterLogin } from "@/lib/auth-redirect";
 export default function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("admin@donpaco.com");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +23,6 @@ export default function LoginClient() {
     setLoading(true);
     try {
       const res = await signIn("credentials", {
-        email,
         password,
         redirect: false,
       });
@@ -52,17 +50,6 @@ export default function LoginClient() {
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <Input

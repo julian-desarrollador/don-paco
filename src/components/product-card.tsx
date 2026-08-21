@@ -77,12 +77,9 @@ export default function ProductCard({ product, showPetAudience }: ProductCardPro
             {product.name}
           </Link>
         </h4>
-        <p className="text-base font-black text-[#029f9c] sm:text-xl">{formatArs(product.price)}</p>
+        <p className="text-base font-black text-[#18181b] sm:text-xl">{formatArs(product.price)}</p>
         <p className="mb-3 text-[11px] text-[#888] sm:mb-4 sm:text-sm">
           {formatArs(product.cashPrice)} efectivo o transferencia
-        </p>
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-wide text-[#e4077d] sm:text-[11px]">
-          Consultá promo en el local
         </p>
         <div className="mt-auto flex flex-col gap-1.5 sm:flex-row sm:gap-2">
           <button
@@ -92,6 +89,7 @@ export default function ProductCard({ product, showPetAudience }: ProductCardPro
                 slug: product.slug,
                 name: product.name,
                 price: product.price,
+                imageSrc: product.imageSrc,
               })
             }
             className="flex-1 rounded-md bg-[#029f9c] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#028785] sm:text-xs"

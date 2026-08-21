@@ -23,6 +23,7 @@ export default async function NewProductPage({ searchParams }: Props) {
     stock: 5,
     images: [] as string[],
     destacado: false,
+    activo: true,
     groupSlug: preGroup,
   };
 

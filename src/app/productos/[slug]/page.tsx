@@ -177,6 +177,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               price={product.price}
               colors={product.colors}
               sizes={product.sizes}
+              imageSrc={product.imageSrc}
             />
 
             <div className="grid gap-3 text-sm text-[#666] sm:grid-cols-2">

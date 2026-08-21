@@ -3,8 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/components/cart-provider";
 import { petAudienceShortLabel } from "@/lib/category-tree";
-import { formatArs, type ListingEntry } from "@/lib/products";
+import { formatArs, type ListingEntry, type Product } from "@/lib/products";
+
+function cheapestVariant(variants: Product[]): Product | undefined {
+  if (variants.length === 0) return undefined;
+  return variants.reduce((lowest, variant) => (variant.price < lowest.price ? variant : lowest));
+}
 
 type ProductGroupCardProps = {
   entry: Extract<ListingEntry, { type: "group" }>;
@@ -12,8 +18,10 @@ type ProductGroupCardProps = {
 };
 
 export default function ProductGroupCard({ entry, showPetAudience }: ProductGroupCardProps) {
+  const { addItem } = useCart();
   const router = useRouter();
   const href = `/productos/${entry.groupSlug}`;
+  const defaultVariant = cheapestVariant(entry.variants);
   const zoomOutGroupSlugs = new Set(["sieger-gato-kitten"]);
   const zoomInGroupSlugs = new Set(["agility-adulto", "agility-cordero", "agility-adulto-raza-peq"]);
   const imageFitClass = zoomOutGroupSlugs.has(entry.groupSlug)
@@ -69,34 +77,32 @@ export default function ProductGroupCard({ entry, showPetAudience }: ProductGrou
             {petAudienceShortLabel(entry.categoryId)}
           </p>
         ) : null}
-        <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-[#029f9c]">
-          Varias presentaciones
-        </p>
         <h4 className="mb-1 min-h-[2.4rem] text-[13px] font-extrabold uppercase leading-tight text-[#777] sm:mb-2 sm:min-h-[3rem] sm:text-base">
           <Link href={href} className="transition-colors hover:text-[#029f9c]">
             {entry.displayName}
           </Link>
         </h4>
-        <p className="text-base font-black text-[#029f9c] sm:text-xl">Desde {formatArs(entry.fromPrice)}</p>
+        <p className="text-base font-black text-[#18181b] sm:text-xl">Desde {formatArs(entry.fromPrice)}</p>
         <p className="mb-3 text-[11px] text-[#888] sm:mb-4 sm:text-sm">
           Desde {formatArs(entry.fromCashPrice)} efectivo o transferencia
         </p>
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-wide text-[#e4077d] sm:text-[11px]">
-          Consultá promo en el local
-        </p>
-        <div className="mt-auto flex flex-col gap-1.5 sm:flex-row sm:gap-2">
-          <Link
-            href={href}
-            className="flex-1 rounded-md bg-[#029f9c] px-3 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#028785] sm:text-xs"
+        <div className="mt-auto">
+          <button
+            type="button"
+            disabled={!defaultVariant}
+            onClick={() => {
+              if (!defaultVariant) return;
+              addItem({
+                slug: defaultVariant.slug,
+                name: defaultVariant.name,
+                price: defaultVariant.price,
+                imageSrc: defaultVariant.imageSrc || entry.imageSrc,
+              });
+            }}
+            className="block w-full rounded-md bg-[#029f9c] px-3 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#028785] disabled:opacity-50 sm:text-xs"
           >
-            Elegir formato
-          </Link>
-          <Link
-            href={href}
-            className="rounded-md border border-[#e4077d] px-3 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-[#e4077d] transition-colors hover:bg-[#e4077d] hover:text-white sm:text-xs"
-          >
-            Ver
-          </Link>
+            Agregar al carrito
+          </button>
         </div>
       </div>
     </article>

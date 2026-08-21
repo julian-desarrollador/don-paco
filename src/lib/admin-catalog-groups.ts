@@ -14,7 +14,7 @@ export type AdminGroupRow = {
 };
 
 export async function listAdminGroups(): Promise<AdminGroupRow[]> {
-  const products = await getProducts();
+  const products = await getProducts({ includeHidden: true });
   const merged = await loadMergedGroupDefinitions(products);
   const slugs = [...merged.keys()].sort((a, b) =>
     (merged.get(a)?.displayName ?? a).localeCompare(merged.get(b)?.displayName ?? b, "es"),
@@ -30,6 +30,6 @@ export async function listAdminGroups(): Promise<AdminGroupRow[]> {
 }
 
 export async function listStandaloneCatalogProducts(): Promise<Product[]> {
-  const products = await getProducts();
+  const products = await getProducts({ includeHidden: true });
   return products.filter((p) => !resolveProductGroupSlug(p));
 }

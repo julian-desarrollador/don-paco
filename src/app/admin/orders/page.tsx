@@ -19,7 +19,6 @@ export default async function AdminOrdersPage() {
       <AdminBackNav href="/admin/dashboard">Panel</AdminBackNav>
       <div>
         <h1 className="text-2xl font-black text-[#18181b]">Pedidos</h1>
-        <p className="text-sm text-[#71717a]">Seguimiento y actualización de estados.</p>
       </div>
       <OrdersClient orders={orders} />
     </div>

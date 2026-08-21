@@ -16,6 +16,7 @@ export type Product = {
   precioLista: number;
   imageSrc?: string;
   destacado?: boolean;
+  activo?: boolean;
   /** Membresía de grupo desde admin (Prisma); si falta, solo cuenta el mapa estático en `product-groups.ts`. */
   groupSlug?: string | null;
 };

@@ -39,6 +39,7 @@ async function main() {
         stock: 5,
         images: [img],
         destacado: row.destacado ?? false,
+        activo: true,
       },
     });
   }

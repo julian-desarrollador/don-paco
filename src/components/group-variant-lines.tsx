@@ -30,6 +30,7 @@ export default function GroupVariantLines({ variants }: GroupVariantLinesProps) 
                 slug: v.slug,
                 name: v.name,
                 price: v.price,
+                imageSrc: v.imageSrc,
               })
             }
             className="shrink-0 rounded-md bg-[#029f9c] px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#028785]"

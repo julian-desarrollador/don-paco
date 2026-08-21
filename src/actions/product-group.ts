@@ -34,7 +34,7 @@ function revalidateAllCatalogPaths(slugs: string[]) {
 }
 
 async function countGroupMembers(groupSlug: string): Promise<number> {
-  const products = await getProducts();
+  const products = await getProducts({ includeHidden: true });
   return products.filter((p) => resolveProductGroupSlug(p) === groupSlug).length;
 }
 

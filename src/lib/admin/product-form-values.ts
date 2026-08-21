@@ -21,6 +21,7 @@ export function productToFormValues(p: Product): ProductFormValues {
     stock: p.stock,
     images: [...p.images],
     destacado: p.destacado,
+    activo: (p as Product & { activo?: boolean }).activo !== false,
     groupSlug: row.groupSlug ?? "",
   };
 }

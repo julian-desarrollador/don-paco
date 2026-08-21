@@ -44,14 +44,11 @@ function buildConfig(): NextAuthConfig {
       Credentials({
         name: "credentials",
         credentials: {
-          email: { label: "Email", type: "email" },
           password: { label: "Contraseña", type: "password" },
         },
         async authorize(credentials) {
-          const email = credentials?.email?.toString().trim().toLowerCase();
           const password = credentials?.password?.toString() ?? "";
-          if (!email || !password) return null;
-          if (email !== adminEmail.toLowerCase()) return null;
+          if (!password) return null;
           const hash = process.env.ADMIN_PASSWORD_HASH?.trim();
           let ok = false;
           if (hash) {

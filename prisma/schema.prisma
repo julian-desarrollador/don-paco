@@ -30,6 +30,8 @@ model Product {
   stock       Int      @default(5)
   images      String[]
   destacado   Boolean  @default(false)
+  /// Si es false, no se muestra en la tienda (sigue en el admin).
+  activo      Boolean  @default(true)
   /// Slug del grupo (`product-groups.ts`); si se setea, la variante aparece en esa ficha agrupada además del mapa estático.
   groupSlug   String?
   createdAt   DateTime @default(now())

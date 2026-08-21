@@ -10,6 +10,7 @@ type ProductDetailActionsProps = {
   price: number;
   colors: string[];
   sizes: string[];
+  imageSrc?: string;
 };
 
 export default function ProductDetailActions({
@@ -18,6 +19,7 @@ export default function ProductDetailActions({
   price,
   colors,
   sizes,
+  imageSrc,
 }: ProductDetailActionsProps) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -30,6 +32,7 @@ export default function ProductDetailActions({
       name: `${name}${selectedColor ? ` - ${selectedColor}` : ""}${selectedSize ? ` - ${selectedSize}` : ""}`,
       price,
       quantity,
+      imageSrc,
     });
   };
 

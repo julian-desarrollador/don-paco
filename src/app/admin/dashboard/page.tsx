@@ -7,32 +7,22 @@ import { prisma } from "@/lib/prisma";
 export default async function AdminDashboardPage() {
   let productCount = 0;
   let pendingOrders = 0;
-  let dbError = false;
   try {
     if (process.env.DATABASE_URL?.trim()) {
       productCount = await prisma.product.count();
       pendingOrders = await prisma.order.count({
         where: { status: { in: [OrderStatus.PENDING, OrderStatus.CONFIRMED] } },
       });
-    } else {
-      dbError = true;
     }
   } catch {
-    dbError = true;
+    productCount = 0;
+    pendingOrders = 0;
   }
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-black text-[#18181b]">Dashboard</h1>
-        <p className="text-sm text-[#71717a]">Resumen de la tienda y accesos rápidos.</p>
-        {dbError && (
-          <p className="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-            Configurá <code className="rounded bg-amber-100 px-1">DATABASE_URL</code> (MongoDB) y ejecutá{" "}
-            <code className="rounded bg-amber-100 px-1">npx prisma db push</code> para activar el panel con datos
-            persistentes.
-          </p>
-        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

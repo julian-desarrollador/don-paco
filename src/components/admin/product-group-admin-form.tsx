@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { createProductGroup, deleteProductGroup, updateProductGroup } from "@/actions/product-group";
 import { uploadProductImage } from "@/actions/cloudinary";
+import { AdminImageCropModal } from "@/components/admin/admin-image-crop-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,9 +23,7 @@ type EditProps = {
   variantCount: number;
   initialDisplayName: string;
   initialDescription: string;
-  /** Imagen guardada en BD para el grupo (puede estar solo en ProductGroupDisplay si el cliente Prisma está viejo). */
   initialHeroImageUrl: string | null;
-  /** Imagen efectiva en la tienda si no hay una propia guardada (variantes / mapa estático). */
   fallbackStorefrontHeroUrl: string | undefined;
   isStaticCatalog: boolean;
 };
@@ -44,22 +43,41 @@ export default function ProductGroupAdminForm(props: Props) {
   const [heroImageUrl, setHeroImageUrl] = useState(
     props.mode === "create" ? "" : props.initialHeroImageUrl ?? "",
   );
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  async function onHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    const fd = new FormData();
-    fd.set("file", file);
-    const res = await uploadProductImage(fd);
-    if (res.error) {
-      toast.error(res.error);
+    if (!file.type.startsWith("image/")) {
+      toast.error("Elegí un archivo de imagen.");
       return;
     }
-    if (res.url) {
-      setHeroImageUrl(res.url);
-      toast.success("Imagen del grupo subida");
+    setPendingFile(file);
+    setCropOpen(true);
+  }
+
+  async function uploadCropped(blob: Blob) {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.set("file", new File([blob], "grupo.webp", { type: "image/webp" }));
+      const res = await uploadProductImage(fd);
+      if (res.error) {
+        toast.error(res.error);
+        return;
+      }
+      if (res.url) {
+        setHeroImageUrl(res.url);
+        toast.success("Imagen subida");
+        setCropOpen(false);
+        setPendingFile(null);
+      }
+    } finally {
+      setUploading(false);
     }
-    e.target.value = "";
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -97,14 +115,10 @@ export default function ProductGroupAdminForm(props: Props) {
   async function onDelete() {
     if (props.mode !== "edit") return;
     if (props.variantCount > 0) {
-      toast.error("Sacá primero todas las variantes del grupo");
+      toast.error("Sacá primero los productos de este grupo");
       return;
     }
-    if (
-      !confirm(
-        "¿Eliminar este grupo del catálogo admin? La URL dejará de existir si no hay entrada en el mapa estático.",
-      )
-    ) {
+    if (!confirm("¿Eliminar este grupo?")) {
       return;
     }
     setBusy(true);
@@ -121,31 +135,21 @@ export default function ProductGroupAdminForm(props: Props) {
     }
   }
 
+  const previewSrc =
+    props.mode === "edit"
+      ? heroImageUrl.trim() || (props.fallbackStorefrontHeroUrl?.trim() ?? "")
+      : heroImageUrl.trim();
+
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-6">
       {props.mode === "edit" ? (
-        <div className="rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 text-sm text-[#52525b]">
-          <p className="font-semibold text-[#18181b]">
-            {props.isStaticCatalog ? "Grupo del catálogo base" : "Grupo creado en el panel"}
-          </p>
-          <p className="mt-1 text-[#71717a]">
-            {props.variantCount} variante{props.variantCount === 1 ? "" : "s"} en este grupo.
-          </p>
-          {props.isStaticCatalog ? (
-            <p className="mt-2 text-xs text-[#71717a]">
-              Nombre por defecto (código):{" "}
-              <span className="font-medium text-[#3f3f46]">{props.baseDisplayName}</span>
-            </p>
-          ) : null}
-        </div>
-      ) : (
         <p className="text-sm text-[#71717a]">
-          El sistema arma solo la URL interna a partir del nombre. Podés subir la imagen de la card del grupo abajo.
+          {props.variantCount} producto{props.variantCount === 1 ? "" : "s"} en este grupo.
         </p>
-      )}
+      ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="pg-display-name">Nombre en tienda (card y ficha)</Label>
+        <Label htmlFor="pg-display-name">Nombre</Label>
         <Input
           id="pg-display-name"
           value={displayName}
@@ -157,89 +161,51 @@ export default function ProductGroupAdminForm(props: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="pg-description">Texto introductorio (opcional)</Label>
+        <Label htmlFor="pg-description">Descripción (opcional)</Label>
         <textarea
           id="pg-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={5}
           maxLength={8000}
-          placeholder="Si lo dejás vacío, en la ficha del grupo se muestra el texto por defecto sobre formatos y precios."
           className="w-full rounded-lg border border-[#e4e4e7] bg-white px-3 py-2 text-sm text-[#3f3f46] placeholder:text-[#a1a1aa] focus:border-[#029f9c]/50 focus:outline-none"
         />
       </div>
 
       <div className="space-y-3 rounded-xl border border-[#e4e4e7] bg-white p-4">
-        <Label className="text-base">Imagen de la card del grupo</Label>
-        <p className="text-xs text-[#71717a]">
-          Es la foto grande que identifica al grupo en el listado y arriba de la ficha con todas las variantes. No
-          reemplaza las fotos de cada producto; esas se editan en cada variante.
-        </p>
-        {(() => {
-          const previewSrc =
-            props.mode === "edit"
-              ? heroImageUrl.trim() || (props.fallbackStorefrontHeroUrl?.trim() ?? "")
-              : heroImageUrl.trim();
-          const usingFallback =
-            props.mode === "edit" && !heroImageUrl.trim() && Boolean(props.fallbackStorefrontHeroUrl?.trim());
-          return previewSrc ? (
-            <>
-              <div className="relative mx-auto flex h-48 max-w-md items-center justify-center rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-3">
-                <Image
-                  src={previewSrc}
-                  alt=""
-                  width={400}
-                  height={240}
-                  className="max-h-44 w-auto max-w-full object-contain"
-                  unoptimized
-                />
-              </div>
-              <p className="text-xs text-[#71717a]">
-                {usingFallback
-                  ? "Vista actual en la tienda (tomada de una variante o del catálogo base). Subí una imagen abajo para fijar una foto solo para este grupo."
-                  : "Esta es la imagen que se usará para la card del grupo al guardar."}
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-[#a1a1aa]">
-              Todavía no hay imagen para mostrar. Subí una foto del grupo o esperá a tener variantes con imagen en la tienda.
-            </p>
-          );
-        })()}
+        <Label className="text-base">Foto</Label>
+        {previewSrc ? (
+          <div className="relative mx-auto flex h-48 max-w-md items-center justify-center rounded-lg border border-[#e4e4e7] bg-[#fafafa] p-3">
+            <Image
+              src={previewSrc}
+              alt=""
+              width={400}
+              height={240}
+              className="max-h-44 w-auto max-w-full object-contain"
+              unoptimized
+            />
+          </div>
+        ) : (
+          <p className="text-sm text-[#a1a1aa]">Todavía no hay foto.</p>
+        )}
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
             asChild
             disabled={busy}
-            className="h-11 cursor-pointer rounded-xl bg-[#029f9c] px-6 text-base font-semibold text-white shadow-md ring-2 ring-[#029f9c]/25 hover:bg-[#027a78] hover:ring-[#027a78]/30 disabled:pointer-events-none disabled:opacity-60"
+            className="h-11 cursor-pointer rounded-xl bg-[#029f9c] px-6 text-base font-semibold text-white hover:bg-[#027a78] disabled:pointer-events-none disabled:opacity-60"
           >
             <label className="cursor-pointer">
               Subir imagen
-              <input type="file" accept="image/*" className="hidden" onChange={onHeroUpload} disabled={busy} />
+              <input type="file" accept="image/*" className="hidden" onChange={onPickFile} disabled={busy} />
             </label>
           </Button>
           {heroImageUrl.trim() ? (
             <Button type="button" variant="ghost" size="sm" onClick={() => setHeroImageUrl("")}>
-              Quitar imagen
+              Quitar
             </Button>
           ) : null}
         </div>
-        <details className="rounded-lg border border-dashed border-[#e4e4e7] bg-[#fafafa] px-3 py-2 text-sm text-[#52525b]">
-          <summary className="cursor-pointer select-none font-medium text-[#71717a]">
-            Avanzado: pegar URL de imagen manualmente
-          </summary>
-          <p className="mt-2 text-xs text-[#71717a]">
-            Solo si ya tenés un enlace directo (por ejemplo de otra herramienta). En lo posible usá &quot;Subir
-            imagen&quot;.
-          </p>
-          <Input
-            placeholder="https://… o /ruta bajo public"
-            className="mt-2 max-w-full rounded-lg font-mono text-xs"
-            value={heroImageUrl}
-            onChange={(e) => setHeroImageUrl(e.target.value)}
-            autoComplete="off"
-          />
-        </details>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -252,6 +218,17 @@ export default function ProductGroupAdminForm(props: Props) {
           </Button>
         ) : null}
       </div>
+      <AdminImageCropModal
+        open={cropOpen}
+        file={pendingFile}
+        busy={uploading}
+        onCancel={() => {
+          if (uploading) return;
+          setCropOpen(false);
+          setPendingFile(null);
+        }}
+        onConfirm={(blob) => void uploadCropped(blob)}
+      />
     </form>
   );
 }

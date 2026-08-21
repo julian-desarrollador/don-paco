@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
@@ -110,8 +111,18 @@ export default function HeaderCart() {
                       key={item.slug}
                       className="grid grid-cols-[78px_1fr] items-stretch gap-3 rounded-xl border border-[#e5e5e5] bg-[#fafafa] p-3"
                     >
-                      <div className="flex h-full min-h-[108px] items-center justify-center rounded-lg border border-[#dfdfdf] bg-white">
-                        <PawIcon className="h-10 w-10 text-[#029f9c]" />
+                      <div className="relative flex h-full min-h-[108px] items-center justify-center overflow-hidden rounded-lg border border-[#dfdfdf] bg-white">
+                        {item.imageSrc ? (
+                          <Image
+                            src={item.imageSrc}
+                            alt={item.name}
+                            fill
+                            className="object-contain p-1.5"
+                            sizes="78px"
+                          />
+                        ) : (
+                          <PawIcon className="h-10 w-10 text-[#029f9c]" />
+                        )}
                       </div>
 
                       <div className="grid min-h-[108px] grid-rows-[auto_auto_1fr]">

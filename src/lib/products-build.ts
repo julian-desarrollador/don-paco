@@ -17,6 +17,7 @@ import { resolveProductGroupSlug } from "@/lib/product-group-slug";
 import type { ProductGroupDefinition } from "@/lib/product-groups";
 import { getProductGroupDefinition, listGroupSlugs } from "@/lib/product-groups";
 import type { ListingEntry, Product } from "@/lib/product-types";
+import { loadProductActivoById, resolveProductActivo } from "@/lib/product-activo";
 import { prisma } from "@/lib/prisma";
 import { precioEfectivoTransfer, precioTarjetaDesdeLista } from "@/lib/pricing";
 
@@ -136,24 +137,32 @@ function mapPrismaRowToProduct(row: PrismaProductRow): Product {
     stock: r.stock,
     imageSrc: imageSrc || undefined,
     destacado: r.destacado,
+    activo: (r as PrismaProductRow & { activo?: boolean }).activo !== false,
   };
 }
 
-async function loadProducts(): Promise<Product[]> {
+async function loadProducts(includeHidden = false): Promise<Product[]> {
   const url = process.env.DATABASE_URL?.trim();
   if (!url) return getProductsFromCatalogJson();
   try {
     const count = await prisma.product.count();
     if (count === 0) return getProductsFromCatalogJson();
     const rows = await prisma.product.findMany({ orderBy: { slug: "asc" } });
-    return rows.map(mapPrismaRowToProduct);
+    const needsFlags = rows.some((r) => typeof (r as { activo?: boolean }).activo !== "boolean");
+    const flags = needsFlags ? await loadProductActivoById() : new Map<string, boolean>();
+    const mapped = rows.map((row) => {
+      const activo = resolveProductActivo(row as { id: string; activo?: boolean }, flags);
+      return mapPrismaRowToProduct({ ...(row as object), activo } as PrismaProductRow);
+    });
+    if (includeHidden) return mapped;
+    return mapped.filter((p) => p.activo !== false);
   } catch {
     return getProductsFromCatalogJson();
   }
 }
 
-export async function getProducts(): Promise<Product[]> {
-  return loadProducts();
+export async function getProducts(opts?: { includeHidden?: boolean }): Promise<Product[]> {
+  return loadProducts(opts?.includeHidden === true);
 }
 
 export async function getProductBySlug(slug: string) {
