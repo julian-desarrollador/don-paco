@@ -18,7 +18,7 @@ export const faqItems: FaqItem[] = [
   {
     id: "envio-mar-del-plata",
     category: "Envios",
-    question: "¿Hacen envíos gratis a Río Negro?",
+    question: "¿Hacen envíos a Río Negro?",
     answer:
       "Sí, realizamos envíos en Río Negro y otras zonas. El costo y la coordinación se confirman al finalizar la compra.",
     keywords: ["rio negro", "envios", "entrega", "costo de envio"],

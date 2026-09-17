@@ -48,14 +48,6 @@ const requiredFields: Array<keyof CheckoutForm> = [
   "postalCode",
 ];
 
-function normalizeString(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
 function isValidPhone(phone: string) {
   const trimmed = phone.trim();
   if (!trimmed) return false;
@@ -137,12 +129,7 @@ export default function CheckoutPage() {
     [items],
   );
 
-  const isMarDelPlata = useMemo(
-    () => normalizeString(form.city).includes("mar del plata"),
-    [form.city],
-  );
-
-  const shippingLabel = isMarDelPlata ? "Gratis" : "A coordinar";
+  const shippingLabel = "A coordinar";
   const total = subtotal;
   const isFormValid = Object.keys(getErrors(form)).length === 0;
   const canPay = isFormValid && itemsPayload.length > 0 && !isSubmitting;
@@ -272,7 +259,7 @@ export default function CheckoutPage() {
   );
 
   return (
-    <main className="min-h-screen bg-stone-50 text-stone-900">
+    <main className="min-h-screen bg-[#f8fafb] text-[#1a1a2e]">
       <SiteHeader />
 
       <section className="mx-auto max-w-7xl px-4 py-10">
@@ -280,7 +267,7 @@ export default function CheckoutPage() {
           <div>
             <h1 className="text-3xl font-black tracking-wide text-stone-900">Checkout</h1>
             <p className="mt-1 text-sm text-stone-600">
-              El envío se coordina luego de la compra. Envío gratis a Río Negro.
+              El envío se coordina luego de la compra.
             </p>
           </div>
           <button
@@ -303,14 +290,7 @@ export default function CheckoutPage() {
               {renderInput("street", "Calle", true)}
               {renderInput("addressNumber", "Número", true)}
               {renderInput("apartment", "Piso/Depto")}
-              <div className="sm:col-span-2">
-                {renderInput("city", "Localidad", true)}
-                <p className="mt-1 text-xs text-stone-600">
-                  {isMarDelPlata
-                    ? "Envío gratis a Mar del Plata."
-                    : "Tip: si tu dirección es en Mar del Plata, el envío es gratis."}
-                </p>
-              </div>
+              {renderInput("city", "Localidad", true)}
               {renderInput("province", "Provincia", true)}
               {renderInput("postalCode", "Código postal", true)}
               <div className="sm:col-span-2">
@@ -352,7 +332,7 @@ export default function CheckoutPage() {
               type="button"
               onClick={handlePay}
               disabled={!canPay}
-              className="mt-5 w-full rounded-md bg-[#029f9c] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#028886] disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 w-full rounded-xl bg-[#f97316] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#ea580c] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Procesando..." : "Pagar"}
             </button>

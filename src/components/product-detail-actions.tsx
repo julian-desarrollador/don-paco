@@ -94,7 +94,7 @@ export default function ProductDetailActions({
       ) : null}
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex items-center rounded-md border border-[#d8d8d8]">
+        <div className="flex items-center rounded-xl border border-[#e2e8f0]">
           <button
             type="button"
             onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
@@ -114,21 +114,21 @@ export default function ProductDetailActions({
         <button
           type="button"
           onClick={addToCart}
-          className="w-full rounded-md bg-[#029f9c] px-4 py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#028886] sm:flex-1"
+          className="w-full rounded-xl bg-[#f97316] px-4 py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#ea580c] sm:flex-1"
         >
           Agregar al carrito
         </button>
         <button
           type="button"
           onClick={buyNow}
-          className="w-full rounded-md border border-[#e4077d] px-4 py-3 text-sm font-bold uppercase tracking-wide text-[#e4077d] transition-colors hover:bg-[#e4077d] hover:text-white sm:w-auto"
+          className="w-full rounded-xl border border-[#029f9c] px-4 py-3 text-sm font-bold uppercase tracking-wide text-[#029f9c] transition-colors hover:bg-[#029f9c] hover:text-white sm:w-auto"
         >
           Comprar ahora
         </button>
       </div>
 
       <p className="mt-2 text-xs text-[#8a8a8a]">
-        Total estimado actual: <span className="font-semibold text-[#029f9c]">{formatArs(price * quantity)}</span>
+        Total estimado actual: <span className="font-semibold text-[#1a1a2e]">{formatArs(price * quantity)}</span>
       </p>
     </>
   );

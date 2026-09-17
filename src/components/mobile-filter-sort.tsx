@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SlidersHorizontal } from "lucide-react";
 import { lockBodyScroll, unlockBodyScroll } from "@/lib/body-scroll-lock";
 import { categoryBadgeLabel, isCategoryId, type NavNode } from "@/lib/category-tree";
 
@@ -28,7 +29,7 @@ function MobileCategoryNav({
   onSelectLeaf: (id: string) => void;
 }) {
   return (
-    <ul className={depth === 0 ? "space-y-2" : "ml-0.5 space-y-1 border-l border-[#e8e8e8] pl-2.5"}>
+    <ul className={depth === 0 ? "space-y-2" : "ml-0.5 space-y-1 border-l border-[#e2e8f0] pl-2.5"}>
       {nodes.map((node, idx) =>
         node.kind === "leaf" ? (
           <li key={node.id}>
@@ -38,7 +39,7 @@ function MobileCategoryNav({
               className={`w-full cursor-pointer rounded-md px-2 py-2 text-left text-[15px] leading-snug transition-colors ${
                 selectedCategory === node.id
                   ? "bg-[#029f9c]/10 font-semibold text-[#029f9c]"
-                  : "text-[#444] hover:bg-[#f6f6f6] hover:text-[#e4077d]"
+                  : "text-[#334155] hover:bg-[#f8fafb] hover:text-[#e4077d]"
               }`}
             >
               {node.label}
@@ -47,10 +48,10 @@ function MobileCategoryNav({
         ) : (
           <li key={`${node.label}-${idx}`} className={depth > 0 ? "pt-1" : ""}>
             <p
-              className={`mb-1 px-2 font-semibold text-[#555] ${
+              className={`mb-1 px-2 font-semibold ${
                 depth === 0
-                  ? "text-[11px] font-black uppercase tracking-wider text-[#9a9a9a]"
-                  : "text-[13px] text-[#666]"
+                  ? "text-[11px] font-black uppercase tracking-wider text-[#64748b]"
+                  : "text-[13px] text-[#334155]"
               }`}
             >
               {node.label}
@@ -88,7 +89,6 @@ export default function MobileFilterSort({
   const sortContainerRef = useRef<HTMLDivElement>(null);
 
   const selectedCount = selectedFilters.length;
-
   const selectedFilterPreview = useMemo(() => selectedFilters.slice(0, 4), [selectedFilters]);
 
   const toggleFilterOption = (option: string) => {
@@ -138,22 +138,12 @@ export default function MobileFilterSort({
 
   return (
     <div className="mb-4 lg:hidden">
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            setIsSortOpen(false);
-            setIsFilterOpen(true);
-          }}
-          className="rounded-lg border border-[#d8d8d8] bg-white px-3 py-2 text-sm font-semibold text-[#5e5e5e]"
-        >
-          Filtrar {selectedCount > 0 ? `(${selectedCount})` : ""}
-        </button>
-        <div ref={sortContainerRef} className="relative">
+      <div className="flex items-center justify-end">
+        <div ref={sortContainerRef} className="relative w-full max-w-[220px]">
           <button
             type="button"
             onClick={() => setIsSortOpen((prev) => !prev)}
-            className="flex w-full items-center justify-between rounded-lg border border-[#d8d8d8] bg-white px-3 py-2 text-sm font-semibold text-[#5e5e5e]"
+            className="flex w-full items-center justify-between rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-sm font-semibold text-[#334155]"
             aria-expanded={isSortOpen}
             aria-haspopup="listbox"
           >
@@ -162,7 +152,7 @@ export default function MobileFilterSort({
           </button>
 
           {isSortOpen ? (
-            <div className="absolute left-0 top-[calc(100%+6px)] z-40 w-full overflow-hidden rounded-lg border border-[#d8d8d8] bg-white shadow-lg">
+            <div className="absolute right-0 top-[calc(100%+6px)] z-40 w-full overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-lg">
               {sortOptions.map((option) => (
                 <button
                   key={option}
@@ -174,7 +164,7 @@ export default function MobileFilterSort({
                   className={`block w-full px-3 py-2 text-left text-sm font-medium ${
                     selectedSort === option
                       ? "bg-[#029f9c]/10 text-[#029f9c]"
-                      : "text-[#666] hover:bg-[#f2f2f2]"
+                      : "text-[#334155] hover:bg-[#f8fafb]"
                   }`}
                 >
                   {option}
@@ -189,7 +179,7 @@ export default function MobileFilterSort({
         <span className="whitespace-nowrap rounded-full bg-[#029f9c]/12 px-3 py-1 text-xs font-semibold text-[#029f9c]">
           {selectedSort}
         </span>
-        <span className="whitespace-nowrap rounded-full bg-[#f1f1f1] px-3 py-1 text-xs font-semibold text-[#666]">
+        <span className="whitespace-nowrap rounded-full bg-[#f1f5f9] px-3 py-1 text-xs font-semibold text-[#334155]">
           {selectedCategory === "Todas"
             ? "Todas las categorías"
             : isCategoryId(selectedCategory)
@@ -199,12 +189,24 @@ export default function MobileFilterSort({
         {selectedFilterPreview.map((item) => (
           <span
             key={item}
-            className="whitespace-nowrap rounded-full bg-[#f1f1f1] px-3 py-1 text-xs font-semibold text-[#666]"
+            className="whitespace-nowrap rounded-full bg-[#f1f5f9] px-3 py-1 text-xs font-semibold text-[#334155]"
           >
             {item}
           </span>
         ))}
       </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          setIsSortOpen(false);
+          setIsFilterOpen(true);
+        }}
+        className="fixed bottom-5 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-[#1a1a2e] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/20"
+      >
+        <SlidersHorizontal className="h-4 w-4" />
+        Filtrar {selectedCount > 0 ? `(${selectedCount})` : ""}
+      </button>
 
       <div
         className={`fixed inset-0 z-50 transition-all duration-300 ${
@@ -215,32 +217,33 @@ export default function MobileFilterSort({
         <button
           type="button"
           onClick={() => setIsFilterOpen(false)}
-          className={`absolute inset-0 bg-black/35 transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
             isFilterOpen ? "opacity-100" : "opacity-0"
           }`}
           aria-label="Cerrar filtros"
         />
 
         <aside
-          className={`fixed inset-0 h-dvh w-screen overflow-hidden bg-white transition-transform duration-300 ${
-            isFilterOpen ? "translate-x-0" : "-translate-x-full"
+          className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl transition-transform duration-300 ${
+            isFilterOpen ? "translate-y-0" : "translate-y-full"
           }`}
         >
-          <div className="flex h-full flex-col">
-            <header className="flex items-center justify-between border-b border-[#e9e9e9] px-4 py-4">
-              <h2 className="text-lg font-black uppercase tracking-wide text-[#029f9c]">Filtros</h2>
+          <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-[#e2e8f0]" />
+          <div className="flex h-full min-h-0 flex-col">
+            <header className="flex items-center justify-between px-4 py-4">
+              <h2 className="text-lg font-extrabold text-[#1a1a2e]">Filtros</h2>
               <button
                 type="button"
                 onClick={() => setIsFilterOpen(false)}
-                className="rounded-md border border-[#ddd] px-2 py-1 text-sm"
+                className="rounded-full border border-[#e2e8f0] px-3 py-1 text-sm font-semibold text-[#64748b]"
               >
                 Cerrar
               </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="flex-1 overflow-y-auto px-4 py-2">
               <div className="mb-6">
-                <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[#8f8f8f]">Categorías</p>
+                <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[#64748b]">Categorías</p>
                 <div className="space-y-3">
                   <button
                     type="button"
@@ -251,7 +254,7 @@ export default function MobileFilterSort({
                     className={`block w-full rounded-md px-2 py-2 text-left text-[15px] font-medium transition-colors ${
                       selectedCategory === "Todas"
                         ? "bg-[#029f9c]/10 font-semibold text-[#029f9c]"
-                        : "text-[#444] hover:bg-[#f2f2f2]"
+                        : "text-[#334155] hover:bg-[#f8fafb]"
                     }`}
                   >
                     Todas
@@ -268,18 +271,16 @@ export default function MobileFilterSort({
                 </div>
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-5 pb-4">
                 {filterGroups.map((group) => (
                   <div key={group.title}>
-                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#8f8f8f]">
-                      {group.title}
-                    </p>
+                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#64748b]">{group.title}</p>
                     <ul className="space-y-2">
                       {group.options.map((option) => {
                         const checked = selectedFilters.includes(option);
                         return (
                           <li key={option}>
-                            <label className="flex items-center gap-2 text-[15px] text-[#666]">
+                            <label className="flex items-center gap-2 text-[15px] text-[#334155]">
                               <input
                                 type="checkbox"
                                 checked={checked}
@@ -297,18 +298,18 @@ export default function MobileFilterSort({
               </div>
             </div>
 
-            <footer className="grid grid-cols-2 gap-2 border-t border-[#e9e9e9] p-4">
+            <footer className="grid grid-cols-2 gap-2 border-t border-[#e2e8f0] p-4">
               <button
                 type="button"
                 onClick={() => setSelectedFilters([])}
-                className="rounded-md border border-[#d8d8d8] px-3 py-2 text-sm font-semibold text-[#666]"
+                className="rounded-xl border border-[#e2e8f0] px-3 py-2.5 text-sm font-semibold text-[#334155]"
               >
                 Limpiar
               </button>
               <button
                 type="button"
                 onClick={() => setIsFilterOpen(false)}
-                className="rounded-md bg-[#029f9c] px-3 py-2 text-sm font-semibold text-white"
+                className="rounded-xl bg-[#f97316] px-3 py-2.5 text-sm font-semibold text-white"
               >
                 Aplicar
               </button>
@@ -316,7 +317,6 @@ export default function MobileFilterSort({
           </div>
         </aside>
       </div>
-
     </div>
   );
 }

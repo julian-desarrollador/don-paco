@@ -3,14 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import PawIcon from "@/components/paw-icon";
 import { petAudienceShortLabel } from "@/lib/category-tree";
-import { formatArs, type Product } from "@/lib/products";
+import { formatArs, formatPricePerKg, type Product } from "@/lib/products";
 
 type ProductCardProps = {
   product: Product;
-  /** En vista "Todas" ayuda a ver si es perro, gato, etc. */
   showPetAudience?: boolean;
 };
 
@@ -24,6 +24,7 @@ export default function ProductCard({ product, showPetAudience }: ProductCardPro
     : zoomInProductSlugs.has(product.slug)
       ? "object-contain p-1"
       : "object-contain p-4";
+  const pricePerKg = formatPricePerKg(product.price, [product.name, ...product.sizes]);
 
   const goToDetail = () => {
     router.push(`/productos/${product.slug}`);
@@ -43,14 +44,19 @@ export default function ProductCard({ product, showPetAudience }: ProductCardPro
 
   return (
     <article
-      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-[#e2e2e2] bg-white shadow-sm transition-shadow hover:shadow-md"
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
       onClick={handleCardClick}
       onKeyDown={handleCardKeyDown}
       tabIndex={0}
       role="link"
       aria-label={`${showPetAudience ? `${petAudienceShortLabel(product.categoryId)} · ` : ""}Ver detalle de ${product.name}`}
     >
-      <div className="relative aspect-[5/6] w-full shrink-0 bg-white sm:aspect-[4/5]">
+      <div className="relative aspect-[4/5] w-full shrink-0 bg-white">
+        {product.brand ? (
+          <span className="absolute left-2 top-2 z-10 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#017d7a] shadow-sm">
+            {product.brand}
+          </span>
+        ) : null}
         {product.imageSrc ? (
           <Image
             src={product.imageSrc}
@@ -60,49 +66,47 @@ export default function ProductCard({ product, showPetAudience }: ProductCardPro
             sizes="(max-width: 640px) 50vw, 280px"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#f4f4f4]">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#f8fafb]">
             <PawIcon className="h-9 w-9 text-[#029f9c] sm:h-14 sm:w-14" />
           </div>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-2.5 sm:p-4">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
         {showPetAudience ? (
-          <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-[#9a9a9a]">
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-[#64748b]">
             {petAudienceShortLabel(product.categoryId)}
           </p>
         ) : null}
-        <h4 className="mb-1 min-h-[2.4rem] text-[13px] font-extrabold uppercase leading-tight text-[#777] sm:mb-2 sm:min-h-[3rem] sm:text-base">
+        <h4 className="mb-2 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-[#1a1a2e] sm:text-[15px]">
           <Link href={`/productos/${product.slug}`} className="transition-colors hover:text-[#029f9c]">
             {product.name}
           </Link>
         </h4>
-        <p className="text-base font-black text-[#18181b] sm:text-xl">{formatArs(product.price)}</p>
-        <p className="mb-3 text-[11px] text-[#888] sm:mb-4 sm:text-sm">
+        <p className="text-lg font-extrabold text-[#1a1a2e] sm:text-xl">{formatArs(product.price)}</p>
+        <p className="text-[11px] text-[#64748b] sm:text-xs">
           {formatArs(product.cashPrice)} efectivo o transferencia
         </p>
-        <div className="mt-auto flex flex-col gap-1.5 sm:flex-row sm:gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              addItem({
-                slug: product.slug,
-                name: product.name,
-                price: product.price,
-                imageSrc: product.imageSrc,
-              })
-            }
-            className="flex-1 rounded-md bg-[#029f9c] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#028785] sm:text-xs"
-          >
-            Comprar
-          </button>
-          <Link
-            href={`/productos/${product.slug}`}
-            className="rounded-md border border-[#e4077d] px-3 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-[#e4077d] transition-colors hover:bg-[#e4077d] hover:text-white sm:text-xs"
-          >
-            Ver
-          </Link>
-        </div>
+        {pricePerKg ? (
+          <p className="mb-3 text-[11px] font-medium text-[#017d7a] sm:text-xs">{pricePerKg}</p>
+        ) : (
+          <div className="mb-3" />
+        )}
+        <button
+          type="button"
+          onClick={() =>
+            addItem({
+              slug: product.slug,
+              name: product.name,
+              price: product.price,
+              imageSrc: product.imageSrc,
+            })
+          }
+          className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#f97316] px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-white transition hover:bg-[#ea580c] sm:text-xs"
+        >
+          <ShoppingCart className="h-3.5 w-3.5" aria-hidden />
+          Agregar al carrito
+        </button>
       </div>
     </article>
   );

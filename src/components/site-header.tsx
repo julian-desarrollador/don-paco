@@ -1,16 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { HelpCircle, MapPin, Menu, PawPrint, Search, X } from "lucide-react";
 import HeaderCart from "@/components/header-cart";
 import HeaderMenu from "@/components/header-menu";
-import PawIcon from "@/components/paw-icon";
 import { lockBodyScroll, unlockBodyScroll } from "@/lib/body-scroll-lock";
+
+function SearchField({ id, className }: { id: string; className?: string }) {
+  return (
+    <form className={className} role="search" action="/" method="get">
+      <label htmlFor={id} className="sr-only">
+        Buscar producto
+      </label>
+      <div className="flex items-center overflow-hidden rounded-full border border-[#e2e8f0] bg-[#f8fafb] shadow-sm focus-within:border-[#029f9c] focus-within:ring-2 focus-within:ring-[#029f9c]/20">
+        <input
+          id={id}
+          name="q"
+          type="search"
+          placeholder="¿Qué estás buscando?"
+          className="w-full bg-transparent px-5 py-2.5 text-sm text-[#1a1a2e] outline-none placeholder:text-[#94a3b8] md:py-3"
+        />
+        <button type="submit" aria-label="Buscar" className="mr-1 rounded-full bg-[#029f9c] p-2.5 text-white hover:bg-[#017d7a]">
+          <Search className="h-4 w-4" />
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showDesktopLogo, setShowDesktopLogo] = useState(false);
   const [isDesktopViewport, setIsDesktopViewport] = useState(false);
 
   useEffect(() => {
@@ -35,137 +55,64 @@ export default function SiteHeader() {
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="sticky top-0 z-20 shadow-sm">
-      {/*
-      <div className="bg-[#e4077d]">
-        <div className="grid w-full grid-cols-1 items-center px-3 py-1.5 md:grid-cols-[1fr_auto_1fr] md:px-4 md:pl-16 min-[1810px]:md:pl-28">
-          <div className="hidden items-center gap-2 text-white md:flex">
-            <a href="#" aria-label="Facebook" className="opacity-90 transition-opacity hover:opacity-100">
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
-                <path d="M13.6 8.5V7.1c0-.7.5-.9.8-.9h2.1V3h-2.9c-3.2 0-3.9 2.4-3.9 4v1.5H7.8v3.5h1.9V21h3.9v-9h2.6l.4-3.5h-3z" />
-              </svg>
-            </a>
-            <a href="#" aria-label="Instagram" className="opacity-90 transition-opacity hover:opacity-100">
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
+    <header className="sticky top-0 z-30 shadow-sm">
+      <div className="hidden bg-[#1a1a2e] text-white md:block">
+        <div className="mx-auto grid max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-6 py-1.5 text-xs">
+          <p className="inline-flex items-center gap-1.5 font-medium text-white/80">
+            <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Roca 473, Gral. Fernández Oro — RN
+          </p>
+          <p className="text-center font-semibold tracking-wide">10% off en efectivo · 5% por transferencia</p>
+          <div className="flex items-center justify-end gap-3">
+            <a href="#" className="inline-flex items-center gap-1 opacity-90 hover:opacity-100" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden>
                 <path d="M12 7.3A4.7 4.7 0 1 0 12 16.7 4.7 4.7 0 0 0 12 7.3Zm0 7.8A3.1 3.1 0 1 1 12 8.9a3.1 3.1 0 0 1 0 6.2Zm6-7.9a1.1 1.1 0 1 1-2.1 0 1.1 1.1 0 0 1 2.1 0Z" />
                 <path d="M12 2.2h4.1c3.2 0 5.7 2.5 5.7 5.7V16c0 3.2-2.5 5.7-5.7 5.7H7.9A5.7 5.7 0 0 1 2.2 16V7.9c0-3.2 2.5-5.7 5.7-5.7H12Zm0 1.6H7.9a4.1 4.1 0 0 0-4.1 4.1V16A4.1 4.1 0 0 0 7.9 20h8.2a4.1 4.1 0 0 0 4.1-4.1V7.9a4.1 4.1 0 0 0-4.1-4.1H12Z" />
               </svg>
-            </a>
-            <a href="#" aria-label="TikTok" className="opacity-90 transition-opacity hover:opacity-100">
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
-                <path d="M17.53 4.53a4.9 4.9 0 0 1-2.88-1.72V2h-2.9v11.02a2.97 2.97 0 1 1-2.97-2.97c.21 0 .41.02.61.06V7.18a5.86 5.86 0 1 0 5.26 5.84V7.86c.9.4 1.88.6 2.88.6V4.53Z" />
-              </svg>
+              <span>Instagram</span>
             </a>
           </div>
-          <p className="text-center text-[9px] font-semibold uppercase tracking-wide text-white md:whitespace-nowrap md:text-[11px] md:tracking-widest">
-            Descuento adicional: 10% en efectivo o 5 % transferencias
-          </p>
-          <div className="hidden md:block" />
         </div>
       </div>
-      */}
 
-      <div className="bg-[#029f9c] text-white">
-        <div className="mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4 md:pl-16 min-[1810px]:md:pl-28">
-          <div className="flex items-center justify-between gap-2 md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-4 min-[1810px]:md:grid-cols-[130px_minmax(560px,760px)_260px] min-[1810px]:md:gap-8">
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/25 text-white transition-colors hover:bg-white/10 md:hidden"
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-main-menu"
-              aria-label="Abrir o cerrar menu"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-5 w-5">
-                {isMobileMenuOpen ? <path d="m18 6-12 12M6 6l12 12" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-              </svg>
-            </button>
+      <div className="border-b border-[#e2e8f0] bg-white">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 py-3 md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6 md:px-6">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#e2e8f0] text-[#1a1a2e] md:hidden"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-main-menu"
+            aria-label="Abrir o cerrar menú"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
 
-            <Link href="/" className="inline-flex items-center gap-1.5 md:hidden">
-              <PawIcon className="h-6 w-6 text-[#029f9c]" />
-              <span className="text-lg font-black uppercase tracking-wide text-white">PET´S SHOP</span>
-            </Link>
+          <Link href="/" className="inline-flex items-center gap-2">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#e6f7f6] text-[#029f9c] md:h-11 md:w-11">
+              <PawPrint className="h-5 w-5" />
+            </span>
+            <span className="text-lg font-extrabold tracking-tight text-[#1a1a2e]">Don Paco</span>
+          </Link>
 
-            {!isDesktopViewport ? (
-              <div className="md:hidden">
-                <HeaderCart />
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => setShowDesktopLogo((previous) => !previous)}
-              className="hidden shrink-0 items-center justify-self-start md:inline-flex"
-              aria-label="Alternar entre marca y logo"
-              title="Alternar logo"
-            >
-              {showDesktopLogo ? (
-                <Image
-                  src="/logo.png"
-                  alt="Don Paco logo"
-                  width={230}
-                  height={76}
-                  className="h-12 w-auto origin-left scale-110 object-contain min-[1810px]:scale-125"
-                  priority
-                />
-              ) : (
-                <span className="inline-flex items-center gap-2">
-                  <PawIcon className="h-7 w-7 text-white" />
-                  <span className="text-lg font-black uppercase tracking-wide text-white min-[1810px]:text-xl">
-                    PET´S SHOP
-                  </span>
-                </span>
-              )}
-            </button>
-
-            <form
-              className="order-3 hidden w-full md:order-none md:block md:w-full md:max-w-[560px] md:justify-self-center min-[1810px]:md:max-w-[760px]"
-              role="search"
-            >
-              <label htmlFor="search-products" className="sr-only">
-                Buscar producto
-              </label>
-              <div className="flex items-center overflow-hidden rounded-md bg-white">
-                <input
-                  id="search-products"
-                  name="search"
-                  type="search"
-                  placeholder="¿Qué estás buscando?"
-                  className="w-full px-4 py-3 text-sm text-[#555] outline-none placeholder:text-[#9f9f9f]"
-                />
-                <button
-                  type="submit"
-                  aria-label="Buscar"
-                  className="border-l border-[#ededed] px-3 py-3 text-[#3f3f3f] transition-colors hover:text-[#029f9c]"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    className="h-5 w-5"
-                  >
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-3.5-3.5" />
-                  </svg>
-                </button>
-              </div>
-            </form>
-
-            <div className="hidden shrink-0 items-center gap-4 text-center md:flex md:justify-self-end min-[1100px]:gap-8">
-              <a href="#" className="hidden text-xs font-semibold md:block">
-                <div className="mx-auto mb-1 flex h-9 w-9 items-center justify-center">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-8 w-8">
-                    <path d="M12 3 3 8.2v7.6L12 21l9-5.2V8.2L12 3Z" />
-                    <path d="M12 21V11.5" />
-                  </svg>
-                </div>
-                <span className="hidden min-[1100px]:inline">Ayuda</span>
-              </a>
-              {isDesktopViewport ? <HeaderCart /> : null}
+          {!isDesktopViewport ? (
+            <div className="md:hidden">
+              <HeaderCart variant="light" />
             </div>
+          ) : null}
+
+          <SearchField id="search-products" className="order-last hidden w-full md:order-none md:block" />
+
+          <div className="hidden items-center gap-5 md:flex">
+            <Link href="/preguntas-frecuentes" className="hidden text-center text-xs font-semibold text-[#1a1a2e] lg:block">
+              <HelpCircle className="mx-auto mb-0.5 h-6 w-6 text-[#029f9c]" />
+              Ayuda
+            </Link>
+            {isDesktopViewport ? <HeaderCart variant="light" /> : null}
           </div>
+        </div>
+        <div className="px-3 pb-3 md:hidden">
+          <SearchField id="search-products-mobile-bar" />
         </div>
       </div>
 

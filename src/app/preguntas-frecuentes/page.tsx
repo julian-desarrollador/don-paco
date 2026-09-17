@@ -44,7 +44,7 @@ export default function PreguntasFrecuentesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white text-[#3f3f3f]">
+    <main className="min-h-screen bg-[#f8fafb] text-[#1a1a2e]">
       <SiteHeader />
 
       <section className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6 md:py-10">
