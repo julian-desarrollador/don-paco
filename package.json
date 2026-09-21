@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "tsx --test src/lib/category-tree.test.ts src/lib/catalog-filter.test.ts",
     "catalog:pretty": "tsx scripts/sync-catalog-to-json.ts",
     "dev:counts": "dotenv -c -- tsx scripts/dev-counts.ts",
     "db:push": "dotenv -c -- prisma db push",

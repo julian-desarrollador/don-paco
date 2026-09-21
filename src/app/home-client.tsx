@@ -13,9 +13,18 @@ import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
 import SortDropdown from "@/components/sort-dropdown";
 import TrustBar from "@/components/trust-bar";
-import { isCategoryId, navRoot, type NavNode } from "@/lib/category-tree";
+import { navRoot, type NavNode } from "@/lib/category-tree";
+import { filterListingEntries } from "@/lib/catalog-filter";
 import type { ListingEntry } from "@/lib/product-types";
 import type { SiteSettings } from "@/types/site-settings";
+
+function categoryNavClass(selected: boolean, depth: number, kind: NavNode["kind"]) {
+  if (selected) return "bg-[#029f9c]/10 font-semibold text-[#029f9c]";
+  if (kind === "branch" && depth === 0) {
+    return "font-black uppercase tracking-wider text-[#64748b] hover:bg-[#f8fafb] hover:text-[#e4077d]";
+  }
+  return "text-[#334155] hover:bg-[#f8fafb] hover:text-[#e4077d]";
+}
 
 function CategoryNav({
   nodes,
@@ -30,32 +39,32 @@ function CategoryNav({
 }) {
   return (
     <ul className={depth === 0 ? "space-y-2" : "ml-0.5 space-y-1 border-l border-[#e2e8f0] pl-2.5"}>
-      {nodes.map((node, idx) =>
+      {nodes.map((node) =>
         node.kind === "leaf" ? (
           <li key={node.id}>
             <button
               type="button"
               onClick={() => onSelect(node.id)}
-              className={`w-full cursor-pointer rounded-md px-2 py-1 text-left text-[14px] transition-colors ${
-                selectedCategory === node.id
-                  ? "bg-[#029f9c]/10 font-semibold text-[#029f9c]"
-                  : "text-[#334155] hover:bg-[#f8fafb] hover:text-[#e4077d]"
-              }`}
+              className={`w-full cursor-pointer rounded-md px-2 py-1 text-left text-[14px] transition-colors ${categoryNavClass(
+                selectedCategory === node.id,
+                depth,
+                node.kind,
+              )}`}
             >
               {node.label}
             </button>
           </li>
         ) : (
-          <li key={`${node.label}-${idx}`} className={depth > 0 ? "pt-1" : ""}>
-            <p
-              className={`mb-1 px-2 font-semibold ${
-                depth === 0
-                  ? "text-[11px] font-black uppercase tracking-wider text-[#64748b]"
-                  : "text-[13px] text-[#334155]"
-              }`}
+          <li key={node.id} className={depth > 0 ? "pt-1" : ""}>
+            <button
+              type="button"
+              onClick={() => onSelect(node.id)}
+              className={`mb-1 w-full cursor-pointer rounded-md px-2 py-1 text-left transition-colors ${
+                depth === 0 ? "text-[11px]" : "text-[13px] font-semibold"
+              } ${categoryNavClass(selectedCategory === node.id, depth, node.kind)}`}
             >
               {node.label}
-            </p>
+            </button>
             <CategoryNav nodes={node.children} depth={depth + 1} selectedCategory={selectedCategory} onSelect={onSelect} />
           </li>
         ),
@@ -70,23 +79,6 @@ const filterGroups = [
     options: ["Menos de $20.000", "$20.000 - $50.000", "$50.000 - $100.000", "Más de $100.000"],
   },
 ];
-
-function normalizeText(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function entryMatchesQuery(entry: ListingEntry, query: string) {
-  if (!query) return true;
-  const haystack =
-    entry.type === "product"
-      ? `${entry.product.name} ${entry.product.brand} ${entry.product.category} ${entry.product.shortDescription}`
-      : `${entry.displayName} ${entry.variants.map((v) => `${v.name} ${v.brand}`).join(" ")}`;
-  return normalizeText(haystack).includes(query);
-}
 
 function buildHeroSlides(site: SiteSettings): HeroSlide[] {
   return [
@@ -145,16 +137,12 @@ export default function HomeClient({
   const [searchQuery, setSearchQuery] = useState(initialQuery);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const c = params.get("categoria");
-    const q = params.get("q");
-    if (c && isCategoryId(c)) {
-      setSelectedCategory(c);
-    }
-    if (q) {
-      setSearchQuery(q);
-    }
-  }, []);
+    setSelectedCategory(initialCategory);
+  }, [initialCategory]);
+
+  useEffect(() => {
+    setSearchQuery(initialQuery);
+  }, [initialQuery]);
 
   const selectCategory = useCallback(
     (id: string) => {
@@ -171,28 +159,16 @@ export default function HomeClient({
     [router],
   );
 
-  const filteredListing = useMemo(() => {
-    const query = normalizeText(searchQuery);
-    return initialListing.filter((entry) => {
-      if (selectedCategory !== "Todas") {
-        if (entry.type === "product") {
-          if (entry.product.categoryId !== selectedCategory) return false;
-        } else if (
-          entry.categoryId !== selectedCategory &&
-          !entry.variants.some((v) => v.categoryId === selectedCategory)
-        ) {
-          return false;
-        }
-      }
-      return entryMatchesQuery(entry, query);
-    });
-  }, [selectedCategory, initialListing, searchQuery]);
+  const filteredListing = useMemo(
+    () => filterListingEntries(initialListing, selectedCategory, searchQuery),
+    [selectedCategory, initialListing, searchQuery],
+  );
 
   const showFeatured = selectedCategory === "Todas" && !searchQuery;
 
   return (
     <main className="min-h-screen bg-[#f8fafb] text-[#1a1a2e]">
-      <SiteHeader />
+      <SiteHeader onSelectCategory={selectCategory} />
 
       <HeroCarousel slides={buildHeroSlides(site)} />
       <TrustBar />
@@ -207,7 +183,7 @@ export default function HomeClient({
         </div>
       ) : null}
 
-      <section id="catalogo" className="mx-auto w-full max-w-[1440px] px-4 py-6 md:px-6 md:py-8">
+      <section id="catalogo" className="mx-auto w-full max-w-[1440px] scroll-mt-28 px-4 py-6 md:scroll-mt-32 md:px-6 md:py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-[#029f9c]">Catálogo</p>

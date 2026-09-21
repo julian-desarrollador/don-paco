@@ -1,13 +1,13 @@
 "use client";
 
 import { Bone, Cat, Dog, HeartPulse, Shirt, Sparkles, ToyBrick } from "lucide-react";
-import type { CategoryId } from "@/lib/category-tree";
+import type { CategoryFilterId } from "@/lib/category-tree";
 
-const CHIPS: { id: CategoryId; label: string; icon: typeof Dog }[] = [
+const CHIPS: { id: CategoryFilterId; label: string; icon: typeof Dog }[] = [
   { id: "mascota-perro-alimento-seco", label: "Alimento perro", icon: Dog },
   { id: "mascota-gato-alimento-seco", label: "Alimento gato", icon: Cat },
   { id: "mascota-perro-alimento-snacks", label: "Snacks", icon: Bone },
-  { id: "general-accesorios-collares-correas", label: "Accesorios", icon: Sparkles },
+  { id: "general-accesorios", label: "Accesorios", icon: Sparkles },
   { id: "general-accesorios-juguetes", label: "Juguetes", icon: ToyBrick },
   { id: "mascota-perro-alimento-dietas", label: "Dietas vet.", icon: HeartPulse },
   { id: "general-ropa", label: "Ropa", icon: Shirt },

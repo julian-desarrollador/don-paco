@@ -7,6 +7,10 @@ import HeaderCart from "@/components/header-cart";
 import HeaderMenu from "@/components/header-menu";
 import { lockBodyScroll, unlockBodyScroll } from "@/lib/body-scroll-lock";
 
+type SiteHeaderProps = {
+  onSelectCategory?: (id: string) => void;
+};
+
 function SearchField({ id, className }: { id: string; className?: string }) {
   return (
     <form className={className} role="search" action="/" method="get">
@@ -29,7 +33,7 @@ function SearchField({ id, className }: { id: string; className?: string }) {
   );
 }
 
-export default function SiteHeader() {
+export default function SiteHeader({ onSelectCategory }: SiteHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopViewport, setIsDesktopViewport] = useState(false);
 
@@ -116,7 +120,11 @@ export default function SiteHeader() {
         </div>
       </div>
 
-      <HeaderMenu isMobileOpen={isMobileMenuOpen} onRequestClose={() => setIsMobileMenuOpen(false)} />
+      <HeaderMenu
+        isMobileOpen={isMobileMenuOpen}
+        onRequestClose={() => setIsMobileMenuOpen(false)}
+        onSelectCategory={onSelectCategory}
+      />
     </header>
   );
 }

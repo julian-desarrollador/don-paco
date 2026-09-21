@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { ChevronDown, Search } from "lucide-react";
-import { navRoot, type NavNode } from "@/lib/category-tree";
+import { catalogCategoryHref, navRoot, type NavNode } from "@/lib/category-tree";
 
 function categoryBranchChildren(sectionTitle: string): readonly NavNode[] {
   const hit = navRoot.find((n): n is Extract<NavNode, { kind: "branch" }> => n.kind === "branch" && n.label === sectionTitle);
@@ -16,16 +16,36 @@ function nestedBranch(parentTitle: string, childTitle: string): readonly NavNode
   return hit?.children ?? [];
 }
 
+function onCategoryNavClick(
+  event: MouseEvent<HTMLAnchorElement>,
+  id: string,
+  onSelectCategory?: (id: string) => void,
+  onNavigate?: () => void,
+) {
+  if (onSelectCategory) {
+    event.preventDefault();
+    onSelectCategory(id);
+    onNavigate?.();
+    window.setTimeout(() => {
+      document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+    return;
+  }
+  onNavigate?.();
+}
+
 function MenuNavTree({
   nodes,
   depth,
   variant,
   onNavigate,
+  onSelectCategory,
 }: {
   nodes: readonly NavNode[];
   depth: number;
   variant: "mobile" | "desktop";
   onNavigate?: () => void;
+  onSelectCategory?: (id: string) => void;
 }) {
   const isMobile = variant === "mobile";
   const ulClass = isMobile
@@ -37,26 +57,38 @@ function MenuNavTree({
       : "ml-2 mt-0.5 space-y-0.5 border-l border-[#e8e8e8] pl-2.5";
 
   const branchClass = isMobile
-    ? "mb-0.5 px-2 pt-1.5 text-[11px] font-black uppercase tracking-wider text-white/55"
-    : "mb-0.5 px-2 pt-1.5 text-[11px] font-bold uppercase tracking-wide text-[#64748b]";
+    ? "mb-0.5 block w-full rounded-md px-2 py-1.5 text-left text-[13px] font-black uppercase tracking-wider text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+    : "mb-0.5 block w-full rounded-md px-2 py-1.5 text-left text-[12px] font-bold uppercase tracking-wide text-[#64748b] transition-colors hover:bg-[#f8fafb] hover:text-[#029f9c]";
 
   const leafClass = isMobile
     ? "block rounded-md px-2 py-1.5 text-left text-[14px] leading-snug text-white/90 transition-colors hover:bg-white/10 hover:text-white"
     : "block rounded-md px-3 py-2 text-left text-[13px] font-medium leading-snug text-[#334155] transition-colors hover:bg-[#f8fafb] hover:text-[#029f9c]";
 
+  const handleCategoryClick = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    onCategoryNavClick(event, id, onSelectCategory, onNavigate);
+  };
+
   return (
     <ul className={ulClass}>
-      {nodes.map((node, idx) =>
+      {nodes.map((node) =>
         node.kind === "leaf" ? (
           <li key={node.id}>
-            <Link href={`/?categoria=${node.id}`} onClick={onNavigate} className={leafClass}>
+            <Link href={catalogCategoryHref(node.id)} onClick={(event) => handleCategoryClick(event, node.id)} className={leafClass}>
               {node.label}
             </Link>
           </li>
         ) : (
-          <li key={`${node.label}-${idx}`}>
-            <p className={branchClass}>{node.label}</p>
-            <MenuNavTree nodes={node.children} depth={depth + 1} variant={variant} onNavigate={onNavigate} />
+          <li key={node.id}>
+            <Link href={catalogCategoryHref(node.id)} onClick={(event) => handleCategoryClick(event, node.id)} className={branchClass}>
+              {node.label}
+            </Link>
+            <MenuNavTree
+              nodes={node.children}
+              depth={depth + 1}
+              variant={variant}
+              onNavigate={onNavigate}
+              onSelectCategory={onSelectCategory}
+            />
           </li>
         ),
       )}
@@ -68,12 +100,13 @@ type MenuItem = {
   label: string;
   href?: string;
   tree?: readonly NavNode[];
+  filterId?: string;
 };
 
 const menuItems: MenuItem[] = [
-  { label: "Perros", tree: nestedBranch("Por mascota", "Perros") },
-  { label: "Gatos", tree: nestedBranch("Por mascota", "Gatos") },
-  { label: "Categorías generales", tree: categoryBranchChildren("Categorías generales") },
+  { label: "Perros", tree: nestedBranch("Por mascota", "Perros"), filterId: "mascota-perro" },
+  { label: "Gatos", tree: nestedBranch("Por mascota", "Gatos"), filterId: "mascota-gato" },
+  { label: "Categorías generales", tree: categoryBranchChildren("Categorías generales"), filterId: "general" },
   { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
   { label: "Contacto", href: "#contacto" },
 ];
@@ -81,16 +114,12 @@ const menuItems: MenuItem[] = [
 type HeaderMenuProps = {
   isMobileOpen: boolean;
   onRequestClose: () => void;
+  onSelectCategory?: (id: string) => void;
 };
 
-export default function HeaderMenu({ isMobileOpen, onRequestClose }: HeaderMenuProps) {
+export default function HeaderMenu({ isMobileOpen, onRequestClose, onSelectCategory }: HeaderMenuProps) {
   const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isMobileOpen) {
-      setExpandedMobileItem(null);
-    }
-  }, [isMobileOpen]);
+  const expandedItem = isMobileOpen ? expandedMobileItem : null;
 
   return (
     <>
@@ -162,11 +191,11 @@ export default function HeaderMenu({ isMobileOpen, onRequestClose }: HeaderMenuP
                           setExpandedMobileItem((prev) => (prev === item.label ? null : item.label))
                         }
                         className="flex w-full items-center justify-between rounded-md px-2.5 py-3 text-left text-base font-medium text-white/95 transition-colors hover:bg-white/10"
-                        aria-expanded={expandedMobileItem === item.label}
+                        aria-expanded={expandedItem === item.label}
                       >
                         <span>{item.label}</span>
                         <ChevronDown
-                          className={`h-4 w-4 transition-transform ${expandedMobileItem === item.label ? "rotate-180" : ""}`}
+                          className={`h-4 w-4 transition-transform ${expandedItem === item.label ? "rotate-180" : ""}`}
                         />
                       </button>
                     ) : item.href?.startsWith("/") ? (
@@ -187,9 +216,24 @@ export default function HeaderMenu({ isMobileOpen, onRequestClose }: HeaderMenuP
                       </a>
                     )}
 
-                    {item.tree && expandedMobileItem === item.label ? (
+                    {item.tree && expandedItem === item.label ? (
                       <div className="mb-1 ml-3 max-h-[55vh] overflow-y-auto border-l border-white/25 pl-3">
-                        <MenuNavTree nodes={item.tree} depth={0} variant="mobile" onNavigate={onRequestClose} />
+                        {item.filterId ? (
+                          <Link
+                            href={catalogCategoryHref(item.filterId)}
+                            onClick={(event) => onCategoryNavClick(event, item.filterId!, onSelectCategory, onRequestClose)}
+                            className="mb-1 block rounded-md px-2 py-1.5 text-left text-[13px] font-semibold text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                          >
+                            Ver todo
+                          </Link>
+                        ) : null}
+                        <MenuNavTree
+                          nodes={item.tree}
+                          depth={0}
+                          variant="mobile"
+                          onNavigate={onRequestClose}
+                          onSelectCategory={onSelectCategory}
+                        />
                       </div>
                     ) : null}
                   </div>
@@ -223,7 +267,21 @@ export default function HeaderMenu({ isMobileOpen, onRequestClose }: HeaderMenuP
                   {item.tree ? (
                     <div className="invisible absolute left-0 top-full z-20 pt-2 opacity-0 transition-all group-hover/menu:visible group-hover/menu:opacity-100">
                       <div className="max-h-[70vh] w-[min(100vw-2rem,22rem)] overflow-y-auto rounded-2xl border border-[#e2e8f0] bg-white py-2 shadow-xl">
-                        <MenuNavTree nodes={item.tree} depth={0} variant="desktop" />
+                        {item.filterId ? (
+                          <Link
+                            href={catalogCategoryHref(item.filterId)}
+                            onClick={(event) => onCategoryNavClick(event, item.filterId!, onSelectCategory)}
+                            className="mx-1 mb-1 block rounded-md px-3 py-2 text-left text-[13px] font-semibold text-[#029f9c] transition-colors hover:bg-[#f8fafb]"
+                          >
+                            Ver todo
+                          </Link>
+                        ) : null}
+                        <MenuNavTree
+                          nodes={item.tree}
+                          depth={0}
+                          variant="desktop"
+                          onSelectCategory={onSelectCategory}
+                        />
                       </div>
                     </div>
                   ) : null}

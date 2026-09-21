@@ -8,7 +8,7 @@ const footerColumns = [
     links: [
       { label: "Alimento perro", href: "/?categoria=mascota-perro-alimento-seco" },
       { label: "Alimento gato", href: "/?categoria=mascota-gato-alimento-seco" },
-      { label: "Accesorios", href: "/?categoria=general-accesorios-collares-correas" },
+      { label: "Accesorios", href: "/?categoria=general-accesorios" },
       { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
     ],
   },

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { lockBodyScroll, unlockBodyScroll } from "@/lib/body-scroll-lock";
-import { categoryBadgeLabel, isCategoryId, type NavNode } from "@/lib/category-tree";
+import { categoryFilterLabel, type NavNode } from "@/lib/category-tree";
 
 type FilterGroup = {
   title: string;
@@ -21,21 +21,21 @@ function MobileCategoryNav({
   nodes,
   depth,
   selectedCategory,
-  onSelectLeaf,
+  onSelect,
 }: {
   nodes: readonly NavNode[];
   depth: number;
   selectedCategory: string;
-  onSelectLeaf: (id: string) => void;
+  onSelect: (id: string) => void;
 }) {
   return (
     <ul className={depth === 0 ? "space-y-2" : "ml-0.5 space-y-1 border-l border-[#e2e8f0] pl-2.5"}>
-      {nodes.map((node, idx) =>
+      {nodes.map((node) =>
         node.kind === "leaf" ? (
           <li key={node.id}>
             <button
               type="button"
-              onClick={() => onSelectLeaf(node.id)}
+              onClick={() => onSelect(node.id)}
               className={`w-full cursor-pointer rounded-md px-2 py-2 text-left text-[15px] leading-snug transition-colors ${
                 selectedCategory === node.id
                   ? "bg-[#029f9c]/10 font-semibold text-[#029f9c]"
@@ -46,21 +46,27 @@ function MobileCategoryNav({
             </button>
           </li>
         ) : (
-          <li key={`${node.label}-${idx}`} className={depth > 0 ? "pt-1" : ""}>
-            <p
-              className={`mb-1 px-2 font-semibold ${
+          <li key={node.id} className={depth > 0 ? "pt-1" : ""}>
+            <button
+              type="button"
+              onClick={() => onSelect(node.id)}
+              className={`mb-1 w-full cursor-pointer rounded-md px-2 py-1.5 text-left font-semibold transition-colors ${
                 depth === 0
-                  ? "text-[11px] font-black uppercase tracking-wider text-[#64748b]"
-                  : "text-[13px] text-[#334155]"
+                  ? "text-[11px] font-black uppercase tracking-wider"
+                  : "text-[13px]"
+              } ${
+                selectedCategory === node.id
+                  ? "bg-[#029f9c]/10 text-[#029f9c]"
+                  : "text-[#334155] hover:bg-[#f8fafb] hover:text-[#e4077d]"
               }`}
             >
               {node.label}
-            </p>
+            </button>
             <MobileCategoryNav
               nodes={node.children}
               depth={depth + 1}
               selectedCategory={selectedCategory}
-              onSelectLeaf={onSelectLeaf}
+              onSelect={onSelect}
             />
           </li>
         ),
@@ -180,11 +186,7 @@ export default function MobileFilterSort({
           {selectedSort}
         </span>
         <span className="whitespace-nowrap rounded-full bg-[#f1f5f9] px-3 py-1 text-xs font-semibold text-[#334155]">
-          {selectedCategory === "Todas"
-            ? "Todas las categorías"
-            : isCategoryId(selectedCategory)
-              ? categoryBadgeLabel(selectedCategory)
-              : selectedCategory}
+          {selectedCategory === "Todas" ? "Todas las categorías" : categoryFilterLabel(selectedCategory)}
         </span>
         {selectedFilterPreview.map((item) => (
           <span
@@ -263,7 +265,7 @@ export default function MobileFilterSort({
                     nodes={navRoot}
                     depth={0}
                     selectedCategory={selectedCategory}
-                    onSelectLeaf={(id) => {
+                    onSelect={(id) => {
                       onChangeCategory(id);
                       setIsFilterOpen(false);
                     }}
