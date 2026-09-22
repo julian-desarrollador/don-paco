@@ -47,6 +47,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
             <TableHead>Cliente</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Estado</TableHead>
+            <TableHead>Mercado Pago</TableHead>
             <TableHead className="text-right">Acción</TableHead>
           </TableRow>
         </TableHeader>
@@ -75,6 +76,10 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                     </option>
                   ))}
                 </select>
+              </TableCell>
+              <TableCell>
+                <div className="text-sm">{o.mpStatus ?? "—"}</div>
+                {o.paymentId ? <div className="text-xs text-[#71717a]">{o.paymentId}</div> : null}
               </TableCell>
               <TableCell className="text-right text-xs text-[#a1a1aa]">{o.id.slice(-6)}</TableCell>
             </TableRow>

@@ -76,11 +76,15 @@ model Order {
   customerName    String?
   customerEmail   String?
   phone             String?
+  address           String?
   status            OrderStatus @default(PENDING)
   total             Float
   currency          String      @default("ARS")
   items             Json
   notes             String?
+  preferenceId      String?
+  paymentId         String?
+  mpStatus          String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
