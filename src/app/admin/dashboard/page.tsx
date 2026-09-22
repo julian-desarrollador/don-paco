@@ -4,15 +4,21 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
+const openStatuses = new Set<OrderStatus>([OrderStatus.PENDING, OrderStatus.CONFIRMED]);
+
 export default async function AdminDashboardPage() {
   let productCount = 0;
   let pendingOrders = 0;
   try {
     if (process.env.DATABASE_URL?.trim()) {
-      productCount = await prisma.product.count();
-      pendingOrders = await prisma.order.count({
-        where: { status: { in: [OrderStatus.PENDING, OrderStatus.CONFIRMED] } },
-      });
+      const [products, orders] = await Promise.all([
+        prisma.product.count(),
+        prisma.order.findMany({ select: { status: true } }),
+      ]);
+      productCount = products;
+      pendingOrders = orders.filter((order) => openStatuses.has(order.status)).length;
     }
   } catch {
     productCount = 0;
