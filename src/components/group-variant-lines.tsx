@@ -27,7 +27,6 @@ export default function GroupVariantLines({ variants }: GroupVariantLinesProps) 
             <div className="min-w-0">
               <p className="text-sm font-bold leading-snug text-[#1a1a2e]">{v.name}</p>
               <p className="mt-1 text-lg font-extrabold text-[#1a1a2e]">{formatArs(v.price)}</p>
-              <p className="text-xs text-[#64748b]">{formatArs(v.cashPrice)} efectivo o transferencia</p>
             </div>
           </div>
           <button

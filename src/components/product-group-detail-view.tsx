@@ -87,15 +87,13 @@ export default function ProductGroupDetailView({ group, relatedProducts }: Produ
                 <span className="whitespace-pre-wrap">{group.groupDescription.trim()}</span>
               ) : (
                 <>
-                  Elegí el formato (presentación). Con tarjeta de crédito se incluye 10% sobre el precio común de cada
-                  variante.
+                  Elegí el formato (presentación).
                 </>
               )}
             </p>
 
             <div className="mb-6 rounded-2xl bg-[#f8fafb] p-4">
               <p className="text-3xl font-extrabold text-[#1a1a2e]">Desde {formatArs(group.fromPrice)}</p>
-              <p className="mt-1 text-sm text-[#64748b]">Desde {formatArs(group.fromCashPrice)} efectivo o transferencia</p>
             </div>
 
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-[#029f9c]">Formatos</h2>

@@ -36,7 +36,7 @@ export const faqItems: FaqItem[] = [
     category: "Pagos",
     question: "¿Qué medios de pago aceptan?",
     answer:
-      "Aceptamos transferencias y pagos online. También podés consultar promociones vigentes al momento de confirmar tu compra.",
+      "Aceptamos tarjeta, Mercado Pago y transferencia.",
     keywords: ["tarjeta", "transferencia", "mercadopago", "pago"],
   },
   {

@@ -83,15 +83,10 @@ export default function ProductCard({ product, showPetAudience }: ProductCardPro
             {product.name}
           </Link>
         </h4>
-        <p className="text-lg font-extrabold text-[#1a1a2e] sm:text-xl">{formatArs(product.price)}</p>
-        <p className="text-[11px] text-[#64748b] sm:text-xs">
-          {formatArs(product.cashPrice)} efectivo o transferencia
-        </p>
+        <p className="mb-3 text-lg font-extrabold text-[#1a1a2e] sm:text-xl">{formatArs(product.price)}</p>
         {pricePerKg ? (
           <p className="mb-3 text-[11px] font-medium text-[#017d7a] sm:text-xs">{pricePerKg}</p>
-        ) : (
-          <div className="mb-3" />
-        )}
+        ) : null}
         <button
           type="button"
           onClick={() =>

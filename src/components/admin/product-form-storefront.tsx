@@ -5,17 +5,18 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Upload } from "lucide-react";
 
+import { AdminMoneyInput } from "@/components/admin/admin-money-input";
 import PawIcon from "@/components/paw-icon";
 import { Button } from "@/components/ui/button";
 import { CategoryFilterPicker } from "@/components/admin/category-filter-picker";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { GroupSelectOption } from "@/lib/admin/product-form-values";
 import type { ProductFormValues } from "@/lib/admin/product-form-values";
 import { categoryBadgeLabel, isCategoryId } from "@/lib/category-tree";
 import { formatArs } from "@/lib/product-format";
-import { listaDesdePrecioTarjeta, precioEfectivoTransfer, precioTarjetaDesdeLista } from "@/lib/pricing";
+import { listaDesdePrecioTarjeta, precioTarjetaDesdeLista } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -61,15 +62,7 @@ export function ProductFormStorefront({
     return gallery[0];
   }, [gallery, heroUrl]);
   const lista = Number(v.lista) || 0;
-  const cr = v.cash;
-  const cash =
-    cr === null || cr === undefined || (typeof cr === "number" && Number.isNaN(cr))
-      ? null
-      : typeof cr === "number"
-        ? cr
-        : null;
   const price = precioTarjetaDesdeLista(lista);
-  const cashPrice = precioEfectivoTransfer(lista, cash);
   const catId = v.categoryId;
   const catLabel = isCategoryId(catId) ? categoryBadgeLabel(catId) : "Sin categoría";
   const slugWatch = (v.slug || "").trim();
@@ -84,7 +77,7 @@ export function ProductFormStorefront({
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-2">
             {!isCreate && slugWatch && v.activo !== false ? (
-              <Button type="button" variant="outline" size="sm" className="rounded-xl" asChild>
+              <Button type="button" variant="outline" size="sm" className="cursor-pointer rounded-xl" asChild>
                 <Link href={`/productos/${encodeURIComponent(slugWatch)}`} target="_blank" rel="noopener noreferrer">
                   Ver en tienda ↗
                 </Link>
@@ -92,10 +85,10 @@ export function ProductFormStorefront({
             ) : null}
           </div>
           <div className="hidden gap-2 md:flex">
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => router.back()}>
+            <Button type="button" variant="outline" className="cursor-pointer rounded-xl" onClick={() => router.back()}>
               Cancelar
             </Button>
-            <Button type="submit" className="rounded-xl bg-[#029f9c] font-semibold hover:bg-[#027a78]">
+            <Button type="submit" className="cursor-pointer rounded-xl bg-[#029f9c] font-semibold hover:bg-[#027a78]">
               {isCreate ? "Crear producto" : "Guardar cambios"}
             </Button>
           </div>
@@ -125,8 +118,13 @@ export function ProductFormStorefront({
             <div className="space-y-3">
               <Label className="text-sm font-semibold text-[#52525b]">Fotos</Label>
               <div>
-                <Button type="button" variant="outline" size="sm" className="rounded-xl" asChild>
+                <Button
+                  type="button"
+                  asChild
+                  className="h-12 w-full cursor-pointer rounded-xl bg-[#029f9c] text-base font-semibold text-white hover:bg-[#027a78]"
+                >
                   <label className="cursor-pointer">
+                    <Upload />
                     Subir imagen
                     <input type="file" accept="image/*" className="hidden" onChange={onUpload} />
                   </label>
@@ -161,7 +159,7 @@ export function ProductFormStorefront({
                       ) : null}
                       <button
                         type="button"
-                        className="absolute right-1 top-1 z-10 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-black/80"
+                        className="absolute right-1 top-1 z-10 cursor-pointer rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-black/80"
                         onClick={(e) => {
                           e.stopPropagation();
                           setValue(
@@ -211,7 +209,6 @@ export function ProductFormStorefront({
 
             <div className="mb-6 rounded-xl bg-[#f7f7f7] p-4">
               <p className="text-3xl font-black text-[#18181b]">{formatArs(price)}</p>
-              <p className="mt-1 text-sm text-[#7a7a7a]">{formatArs(cashPrice)} efectivo o transferencia</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1">
                   <Label htmlFor="storefront-precio-tarjeta">Precio con tarjeta</Label>
@@ -219,31 +216,16 @@ export function ProductFormStorefront({
                     name="lista"
                     control={control}
                     render={({ field }) => {
-                      const tarjetaMostrada =
-                        field.value === undefined || field.value === null || Number(field.value) === 0
-                          ? ""
-                          : String(precioTarjetaDesdeLista(Number(field.value)));
+                      const lista = Number(field.value);
+                      const tarjeta =
+                        !Number.isFinite(lista) || lista <= 0 ? null : precioTarjetaDesdeLista(lista);
                       return (
-                        <Input
+                        <AdminMoneyInput
                           id="storefront-precio-tarjeta"
-                          type="number"
-                          step="1"
-                          min={0}
-                          inputMode="numeric"
                           className="rounded-lg border-[#e4e4e4] bg-white"
-                          value={tarjetaMostrada}
-                          onChange={(e) => {
-                            const raw = e.target.value;
-                            if (raw === "") {
-                              field.onChange(0);
-                              return;
-                            }
-                            const n = Number(raw);
-                            if (!Number.isFinite(n)) return;
-                            field.onChange(listaDesdePrecioTarjeta(n));
-                          }}
+                          value={tarjeta}
                           onBlur={field.onBlur}
-                          ref={field.ref}
+                          onChange={(n) => field.onChange(n == null ? 0 : listaDesdePrecioTarjeta(n))}
                         />
                       );
                     }}
@@ -251,12 +233,21 @@ export function ProductFormStorefront({
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="storefront-cash">Efectivo (opcional)</Label>
-                  <Input
-                    id="storefront-cash"
-                    type="number"
-                    step="1"
-                    className="rounded-lg border-[#e4e4e4] bg-white"
-                    {...register("cash")}
+                  <Controller
+                    name="cash"
+                    control={control}
+                    render={({ field }) => {
+                      const cash = typeof field.value === "number" && field.value > 0 ? field.value : null;
+                      return (
+                        <AdminMoneyInput
+                          id="storefront-cash"
+                          className="rounded-lg border-[#e4e4e4] bg-white"
+                          value={cash}
+                          onBlur={field.onBlur}
+                          onChange={(n) => field.onChange(n)}
+                        />
+                      );
+                    }}
                   />
                 </div>
               </div>
@@ -294,7 +285,7 @@ export function ProductFormStorefront({
                 <Label htmlFor="storefront-group">Grupo (opcional)</Label>
                 <select
                   id="storefront-group"
-                  className="mt-1 flex h-10 w-full rounded-lg border border-[#e4e4e4] bg-white px-3 text-sm"
+                  className="mt-1 flex h-10 w-full cursor-pointer rounded-lg border border-[#e4e4e4] bg-white px-3 text-sm"
                   {...register("groupSlug")}
                 >
                   <option value="">— Sin grupo —</option>
@@ -314,7 +305,7 @@ export function ProductFormStorefront({
                   type="button"
                   onClick={() => setValue("activo", v.activo === false, { shouldDirty: true })}
                   className={cn(
-                    "mt-1 flex h-11 w-full items-center justify-between rounded-xl border px-3.5 text-sm font-semibold",
+                    "mt-1 flex h-11 w-full cursor-pointer items-center justify-between rounded-xl border px-3.5 text-sm font-semibold",
                     v.activo === false
                       ? "border-[#e8d9b8] bg-[#faf6ee] text-[#7c5c1e]"
                       : "border-[#b7e0de] bg-[#f0faf9] text-[#027a78]",
@@ -340,10 +331,10 @@ export function ProductFormStorefront({
                 <input
                   id="storefront-destacado"
                   type="checkbox"
-                  className="h-4 w-4 accent-[#029f9c]"
+                  className="h-4 w-4 cursor-pointer accent-[#029f9c]"
                   {...register("destacado")}
                 />
-                <Label htmlFor="storefront-destacado" className="font-medium text-[#555]">
+                <Label htmlFor="storefront-destacado" className="cursor-pointer font-medium text-[#555]">
                   Destacado
                 </Label>
               </div>
@@ -351,7 +342,7 @@ export function ProductFormStorefront({
                 <Button
                   type="button"
                   variant="outline"
-                  className="mt-4 w-full rounded-xl border-red-200 text-red-600 hover:bg-red-50"
+                  className="mt-4 w-full cursor-pointer rounded-xl border-red-200 text-red-600 hover:bg-red-50"
                   onClick={onDelete}
                 >
                   Eliminar producto
@@ -364,10 +355,10 @@ export function ProductFormStorefront({
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#e4e4e7] bg-white/95 px-4 py-3 backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-7xl gap-2">
-          <Button type="button" variant="outline" className="h-11 min-h-[44px] flex-1 rounded-xl" onClick={() => router.back()}>
+          <Button type="button" variant="outline" className="h-11 min-h-[44px] flex-1 cursor-pointer rounded-xl" onClick={() => router.back()}>
             Cancelar
           </Button>
-          <Button type="submit" className="h-11 min-h-[44px] flex-[2] rounded-xl bg-[#029f9c] font-semibold hover:bg-[#027a78]">
+          <Button type="submit" className="h-11 min-h-[44px] flex-[2] cursor-pointer rounded-xl bg-[#029f9c] font-semibold hover:bg-[#027a78]">
             {isCreate ? "Crear" : "Guardar"}
           </Button>
         </div>

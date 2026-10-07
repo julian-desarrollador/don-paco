@@ -67,13 +67,6 @@ function catalogMtimeMs(): number {
 
 let productsJsonCache: { mtimeMs: number; list: Product[] } | null = null;
 
-function buildDescriptionFromLista(row: { lista: number; cash: number | null }) {
-  const comunTxt = formatArs(row.lista);
-  const tarjetaTxt = formatArs(precioTarjetaDesdeLista(row.lista));
-  const efectivoTxt = formatArs(precioEfectivoTransfer(row.lista, row.cash));
-  return `Precio común (referencia efectivo/transferencia): ${comunTxt}. Con tarjeta (+10% sobre ese precio): ${tarjetaTxt}. Efectivo o transferencia según ficha: ${efectivoTxt}. Consultá promociones 2x1 en latas y pouches según disponibilidad en el local.`;
-}
-
 function mapCatalogRowToProduct(row: CatalogRow): Product {
   const manualImg = row.imageSrc?.trim();
   const imageSrc = manualImg || productImageBySlug[row.slug];
@@ -87,8 +80,8 @@ function mapCatalogRowToProduct(row: CatalogRow): Product {
     cashPrice: precioEfectivoTransfer(row.lista, row.cash),
     categoryId: row.categoryId,
     category: categoryBadgeLabel(row.categoryId),
-    shortDescription: `${formatArs(precioTarjetaDesdeLista(row.lista))} con tarjeta · ${row.marca}`,
-    description: desc || buildDescriptionFromLista(row),
+    shortDescription: row.marca,
+    description: desc || "",
     colors: [],
     sizes: [],
     stock: 5,
@@ -128,10 +121,8 @@ function mapPrismaRowToProduct(row: PrismaProductRow): Product {
     cashPrice: precioEfectivoTransfer(r.lista, cash),
     categoryId,
     category: categoryBadgeLabel(categoryId),
-    shortDescription: desc
-      ? desc.slice(0, 120)
-      : `${formatArs(precioTarjetaDesdeLista(r.lista))} con tarjeta · ${r.marca}`,
-    description: desc || buildDescriptionFromLista({ lista: r.lista, cash }),
+    shortDescription: desc ? desc.slice(0, 120) : r.marca,
+    description: desc || "",
     colors: [],
     sizes: [],
     stock: r.stock,

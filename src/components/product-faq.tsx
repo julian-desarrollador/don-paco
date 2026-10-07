@@ -27,7 +27,7 @@ export const DEFAULT_PRODUCT_FAQS: ProductFaqItem[] = [
   {
     question: "¿Qué medios de pago aceptan?",
     answer:
-      "Tarjeta, Mercado Pago y transferencia. El precio de lista suele coincidir con efectivo/transferencia; con tarjeta se aplica el recargo informado en la ficha.",
+      "Tarjeta, Mercado Pago y transferencia.",
   },
 ];
 

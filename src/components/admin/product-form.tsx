@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 
 import { createProduct, deleteProduct, updateProduct } from "@/actions/product";
 import { uploadProductImage } from "@/actions/cloudinary";
+import { AdminMoneyInput } from "@/components/admin/admin-money-input";
 import { listCategorySelectOptions } from "@/lib/admin-category-select";
 import { listaDesdePrecioTarjeta, precioTarjetaDesdeLista } from "@/lib/pricing";
 import type { ProductFormValues } from "@/lib/admin/product-form-values";
@@ -204,7 +206,7 @@ export default function ProductForm({
               href={`/productos/${encodeURIComponent(defaultValues.slug)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-semibold text-[#029f9c] hover:underline"
+              className="cursor-pointer text-sm font-semibold text-[#029f9c] hover:underline"
             >
               Ver en tienda ↗
             </Link>
@@ -225,7 +227,7 @@ export default function ProductForm({
               <Label htmlFor="categoryId">Categoría</Label>
               <select
                 id="categoryId"
-                className="flex h-9 w-full rounded-md border border-[#e4e4e7] bg-white px-3 text-sm"
+                className="flex h-9 w-full cursor-pointer rounded-md border border-[#e4e4e7] bg-white px-3 text-sm"
                 {...form.register("categoryId")}
               >
                 {categories.map((c) => (
@@ -239,7 +241,7 @@ export default function ProductForm({
               <Label htmlFor="groupSlug">Grupo (opcional)</Label>
               <select
                 id="groupSlug"
-                className="flex h-9 w-full rounded-md border border-[#e4e4e7] bg-white px-3 text-sm"
+                className="flex h-9 w-full cursor-pointer rounded-md border border-[#e4e4e7] bg-white px-3 text-sm"
                 {...form.register("groupSlug")}
               >
                 <option value="">— Sin grupo —</option>
@@ -259,29 +261,15 @@ export default function ProductForm({
                 name="lista"
                 control={form.control}
                 render={({ field }) => {
-                  const tarjetaMostrada =
-                    field.value === undefined || field.value === null || Number(field.value) === 0
-                      ? ""
-                      : String(precioTarjetaDesdeLista(Number(field.value)));
+                  const lista = Number(field.value);
+                  const tarjeta =
+                    !Number.isFinite(lista) || lista <= 0 ? null : precioTarjetaDesdeLista(lista);
                   return (
-                    <Input
+                    <AdminMoneyInput
                       id="lista-tarjeta-card"
-                      type="number"
-                      step="1"
-                      min={0}
-                      value={tarjetaMostrada}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        if (raw === "") {
-                          field.onChange(0);
-                          return;
-                        }
-                        const n = Number(raw);
-                        if (!Number.isFinite(n)) return;
-                        field.onChange(listaDesdePrecioTarjeta(n));
-                      }}
+                      value={tarjeta}
                       onBlur={field.onBlur}
-                      ref={field.ref}
+                      onChange={(n) => field.onChange(n == null ? 0 : listaDesdePrecioTarjeta(n))}
                     />
                   );
                 }}
@@ -289,22 +277,38 @@ export default function ProductForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="cash">Efectivo (opcional)</Label>
-              <Input id="cash" type="number" step="1" {...form.register("cash")} />
+              <Controller
+                name="cash"
+                control={form.control}
+                render={({ field }) => {
+                  const cash = typeof field.value === "number" && field.value > 0 ? field.value : null;
+                  return (
+                    <AdminMoneyInput
+                      id="cash"
+                      value={cash}
+                      onBlur={field.onBlur}
+                      onChange={(n) => field.onChange(n)}
+                    />
+                  );
+                }}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="stock">Stock</Label>
               <Input id="stock" type="number" {...form.register("stock", { valueAsNumber: true })} />
             </div>
             <div className="flex items-center gap-2 sm:col-span-2">
-              <input id="destacado" type="checkbox" {...form.register("destacado")} />
-              <Label htmlFor="destacado">Destacado</Label>
+              <input id="destacado" type="checkbox" className="cursor-pointer" {...form.register("destacado")} />
+              <Label htmlFor="destacado" className="cursor-pointer">
+                Destacado
+              </Label>
             </div>
             <div className="sm:col-span-2">
               <Label>En la tienda</Label>
               <button
                 type="button"
                 onClick={() => form.setValue("activo", form.getValues("activo") === false, { shouldDirty: true })}
-                className="mt-1.5 flex h-11 w-full items-center justify-between rounded-xl border border-[#e4e4e7] bg-white px-3.5 text-sm font-semibold"
+                className="mt-1.5 flex h-11 w-full cursor-pointer items-center justify-between rounded-xl border border-[#e4e4e7] bg-white px-3.5 text-sm font-semibold"
               >
                 {form.watch("activo") === false ? "Oculto en la página" : "Se muestra en la página"}
               </button>
@@ -321,17 +325,22 @@ export default function ProductForm({
 
             <div className="space-y-3 sm:col-span-2">
               <Label>Fotos</Label>
-              <Button type="button" variant="outline" size="sm" asChild>
+              <Button
+                type="button"
+                asChild
+                className="h-12 w-full cursor-pointer rounded-xl bg-[#029f9c] text-base font-semibold text-white hover:bg-[#027a78]"
+              >
                 <label className="cursor-pointer">
+                  <Upload />
                   Subir imagen
-                    <input type="file" accept="image/*" className="hidden" onChange={onPickFile} />
+                  <input type="file" accept="image/*" className="hidden" onChange={onPickFile} />
                 </label>
               </Button>
               <ul className="space-y-2">
                 {images.map((url, i) => (
                   <li key={`${url}-${i}`} className="flex items-center gap-2 text-sm">
                     <span className="truncate rounded bg-[#f4f4f5] px-2 py-1 text-xs">{url}</span>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => removeImageAt(i)}>
+                    <Button type="button" variant="ghost" size="sm" className="cursor-pointer" onClick={() => removeImageAt(i)}>
                       Quitar
                     </Button>
                   </li>
@@ -341,12 +350,14 @@ export default function ProductForm({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button type="submit">{mode === "create" ? "Crear" : "Guardar"}</Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button type="submit" className="cursor-pointer">
+              {mode === "create" ? "Crear" : "Guardar"}
+            </Button>
+            <Button type="button" variant="outline" className="cursor-pointer" onClick={() => router.back()}>
               Cancelar
             </Button>
             {mode === "edit" ? (
-              <Button type="button" variant="destructive" onClick={requestDelete}>
+              <Button type="button" variant="destructive" className="cursor-pointer" onClick={requestDelete}>
                 Eliminar
               </Button>
             ) : null}

@@ -92,15 +92,10 @@ export default function ProductGroupCard({ entry, showPetAudience }: ProductGrou
             {entry.displayName}
           </Link>
         </h4>
-        <p className="text-lg font-extrabold text-[#1a1a2e] sm:text-xl">Desde {formatArs(entry.fromPrice)}</p>
-        <p className="text-[11px] text-[#64748b] sm:text-xs">
-          Desde {formatArs(entry.fromCashPrice)} efectivo o transferencia
-        </p>
+        <p className="mb-3 text-lg font-extrabold text-[#1a1a2e] sm:text-xl">Desde {formatArs(entry.fromPrice)}</p>
         {pricePerKg ? (
           <p className="mb-3 text-[11px] font-medium text-[#017d7a] sm:text-xs">Desde {pricePerKg}</p>
-        ) : (
-          <div className="mb-3" />
-        )}
+        ) : null}
         <button
           type="button"
           disabled={!defaultVariant}

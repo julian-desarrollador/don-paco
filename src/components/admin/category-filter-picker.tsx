@@ -47,7 +47,7 @@ function NavNodes({
               type="button"
               onClick={() => onPickLeaf(node.id)}
               className={cn(
-                "flex w-full min-h-[44px] items-center rounded-xl border px-3 py-2.5 text-left text-sm font-semibold leading-snug transition-colors",
+                "flex w-full min-h-[44px] cursor-pointer items-center rounded-xl border px-3 py-2.5 text-left text-sm font-semibold leading-snug transition-colors",
                 selected
                   ? "border-[#029f9c] bg-[#029f9c]/10 text-[#026d6b]"
                   : "border-transparent bg-[#fafafa] text-[#18181b] hover:bg-[#f4f4f5] active:bg-[#e4e4e7]",
@@ -123,7 +123,7 @@ export function CategoryFilterPicker({
           <Button
             type="button"
             variant="outline"
-            className="h-auto min-h-[44px] w-full justify-between gap-2 rounded-xl border-[#e4e4e7] px-3 py-2.5 text-left font-normal shadow-sm hover:bg-[#fafafa]"
+            className="h-auto min-h-[44px] w-full cursor-pointer justify-between gap-2 rounded-xl border-[#e4e4e7] px-3 py-2.5 text-left font-normal shadow-sm hover:bg-[#fafafa]"
             aria-expanded={open}
             aria-haspopup="dialog"
           >
@@ -161,7 +161,7 @@ export function CategoryFilterPicker({
               type="button"
               onClick={pickAll}
               className={cn(
-                "mb-4 flex w-full min-h-[44px] items-center rounded-xl border px-3 py-2.5 text-left text-sm font-bold transition-colors",
+                "mb-4 flex w-full min-h-[44px] cursor-pointer items-center rounded-xl border px-3 py-2.5 text-left text-sm font-bold transition-colors",
                 !selected
                   ? "border-[#029f9c] bg-[#029f9c]/10 text-[#026d6b]"
                   : "border-[#e4e4e7] bg-white text-[#18181b] hover:bg-[#fafafa]",

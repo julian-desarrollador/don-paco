@@ -18,7 +18,6 @@ export default function HeaderCart({ variant = "light" }: HeaderCartProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { items, totalQuantity, subtotal, updateQuantity, removeItem } = useCart();
   const router = useRouter();
-  const cashSaving = Math.round(subtotal * 0.1);
 
   useEffect(() => {
     if (isOpen) {
@@ -186,11 +185,6 @@ export default function HeaderCart({ variant = "light" }: HeaderCartProps) {
                 <span className="font-semibold text-[#64748b]">{totalQuantity} {totalQuantity === 1 ? "producto" : "productos"}</span>
                 <span className="text-xl font-extrabold text-[#1a1a2e]">{formatArs(subtotal)}</span>
               </div>
-              {cashSaving > 0 ? (
-                <p className="mb-3 text-xs font-medium text-[#017d7a]">
-                  Ahorrás hasta {formatArs(cashSaving)} pagando en efectivo.
-                </p>
-              ) : null}
               <p className="mb-4 text-xs text-[#64748b]">
                 El costo de envío e impuestos se calculará al finalizar la compra.
               </p>

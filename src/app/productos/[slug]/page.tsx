@@ -152,11 +152,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
             <div className="mb-6 rounded-2xl bg-[#f8fafb] p-4">
               <p className="text-3xl font-extrabold text-[#1a1a2e]">{formatArs(product.price)}</p>
-              <p className="mt-1 text-sm text-[#64748b]">{formatArs(product.cashPrice)} efectivo o transferencia</p>
               {perKg ? <p className="mt-1 text-xs font-medium text-[#017d7a]">{perKg}</p> : null}
-              <p className="mt-3 text-xs leading-relaxed text-[#64748b]">
-                Pago con tarjeta: incluye el 10% sobre el precio común ({formatArs(product.precioLista)}).
-              </p>
             </div>
 
             <ProductDetailActions

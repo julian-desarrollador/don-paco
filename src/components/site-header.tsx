@@ -61,12 +61,11 @@ export default function SiteHeader({ onSelectCategory }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-30 shadow-sm">
       <div className="hidden bg-[#1a1a2e] text-white md:block">
-        <div className="mx-auto grid max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-6 py-1.5 text-xs">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-6 py-1.5 text-xs">
           <p className="inline-flex items-center gap-1.5 font-medium text-white/80">
             <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
             Roca 473, Gral. Fernández Oro — RN
           </p>
-          <p className="text-center font-semibold tracking-wide">10% off en efectivo · 5% por transferencia</p>
           <div className="flex items-center justify-end gap-3">
             <a href="#" className="inline-flex items-center gap-1 opacity-90 hover:opacity-100" aria-label="Instagram">
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden>
